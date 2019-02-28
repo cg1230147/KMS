@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>知识管理系统登陆</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link href="/static/css/login.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="/static/plugins/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        .hide{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login">
+        <div class="inset">
+            <div class="login-head">
+                <h3>用&nbsp户&nbsp登&nbsp陆</h3>
+            </div>
+            <form method="post" action="/login/" class="login-body">
+                {% csrf_token %}
+                <ul>
+                    <li>
+                        <i class="fa fa-user fa-fw fa-lg"></i>
+                        <input name="username" id="username" type="text" class="text" placeholder="用户名">
+                    </li>
+                    <div class="clear"></div>
+                    <li>
+                        <i class="fa fa-lock fa-fw fa-lg"></i>
+                        <input name="password" id="password" type="password" placeholder="密码">
+                    </li>
+                </ul>
+                <div class="clear"></div>
+                <div class="error-message" style="height: 21px;">
+                    <span style="color: #FF433D">{{ message }}</span>
+                </div>
+                <div class="submit">
+                    <input type="submit"  value="登陆" >
+                    <div class="clear"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+	<div class="clear"></div>
+    <div class="footer"></div>
+    <script src="/static/plugins/js/jquery-3.3.1.js"></script>
+    <script>
+        /*
+        function Login() {
+            let username = $('.login #username').val();
+            let password = $('.login #password').val();
+            $.ajax({
+                url: '/login/',
+                method: 'post',
+                dataType: 'json',
+                data: {'username': username, 'password': password},
+                success: function (data) {
+                    if (data.status === false){
+                        $('.login .error-message').children().removeClass('hide').text(data.message)
+                    }
+                }
+            })
+        }*/
+    </script>
+</body>
+</html>

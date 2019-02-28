@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+
+     input:required:invalid, input:focus:invalid, textarea:required:invalid, textarea:focus:invalid{box-shadow: none;}
+        input[required]:invalid,
+        input:focus:invalid,
+        textarea[required]:invalid,
+        textarea:focus:invalid {
+            box-shadow: none;
+        }
+
+        body {
+			font-family: Georgia, serif;
+		}
+
+		.stripes {
+			height: 250px;
+			width: 375px;
+			float: left;
+			margin: 10px;
+
+			-webkit-background-size: 50px 50px;
+			-moz-background-size: 50px 50px;
+			background-size: 50px 50px; /* Controls the size of the stripes */
+
+			-moz-box-shadow: 1px 1px 8px gray;
+			-webkit-box-shadow: 1px 1px 8px gray;
+			box-shadow: 1px 1px 8px gray;
+		}
+        .horizontal {
+			background-color: #0ae;
+			background-image: -webkit-gradient(linear, 0 0, 0 100%, color-stop(.5, rgba(255, 255, 255, .2)), color-stop(.5, transparent), to(transparent));
+			background-image: -moz-linear-gradient(rgba(255, 255, 255, .2) 50%, transparent 50%, transparent);
+			background-image: -o-linear-gradient(rgba(255, 255, 255, .2) 50%, transparent 50%, transparent);
+			background-image: linear-gradient(rgba(255, 255, 255, .2) 50%, transparent 50%, transparent);
+		}
+    </style>
+</head>
+<body>
+    <div class="horizontal stripes">
+    </div>
+    <div id="test">
+
+    </div>
+    <p>ddddd<img src="/upload_files/fb1848c6-366c-11e9-a92c-3c970e58089b/django upload.jpg" style="background-color: transparent; max-width: 100%;"></p>
+
+
+
+    <form >
+        <input type="text" required oninvalid="setCustomValidity('请输入您的姓名');" oninput="setCustomValidity('');">
+        <input type="text" required oninvalid="setCustomValidity('请输入您的年龄');" oninput="setCustomValidity('');">
+
+        <button type="submit" class="btn btn-default">保存</button>
+    </form>
+    <script src="F:/py_code/webFrame/KMS/static/plugins/js/jquery-3.3.1.js"></script>
+    <script>
+
+       // $('#submit').click(function () {
+         //  $.ajax({})
+       // });
+
+        $('#test').append('<div id="curr" onclick="ale();">ddddd</div>');
+        function ale() {
+            alert('aaaa')
+        }
+    </script>
+</body>
+</html>

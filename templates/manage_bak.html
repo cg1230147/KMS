@@ -1,0 +1,806 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    <title>知识管理系统后台管理</title>
+{% endblock %}
+
+{% block style %}
+    <style>
+        #register .footer-btn, #classify .footer-btn, #group .footer-btn{
+            text-align: center;
+            border: transparent;
+        }
+        #register, #classify, #group{
+            position: absolute;
+            top: -23px;
+            left: 16%;
+            z-index: 12;
+        }
+        #register .form-group,#classify .form-group, #group .form-group{
+            margin-bottom: 5px;
+        }
+
+        .hide{
+            display: none;
+        }
+        .error{
+            color: #a94442;
+            position: absolute;
+            right: 16px;
+        }
+        #mask{
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            position: fixed;
+            background: rgba(251,251,251,0.5);
+            z-index: 11;
+            overflow-y: scroll;
+        }
+        .manage-content{
+            height: 93%;
+            width: 100%;
+        }
+        .group-manage{
+            width: 265px;
+            height: 100%;
+            overflow-y: scroll;
+            box-shadow: 2px 0 6px rgba(0,21,41,.50);
+        }
+
+        /* 群组树 */
+        .group-tree a{
+            color: #141747;
+            text-decoration: none;
+            font-size: 15px;
+            font-family: "微软雅黑";
+        }
+        .group-tree a:hover{
+            text-decoration: underline;
+        }
+        .group-tree ul li{
+            list-style: none;
+        }
+        .group-tree{
+            margin-left: 16px;
+            margin-top: 5px;
+        }
+        .group-tree .level-top-icon, .level-one-icon{
+            cursor: pointer;
+        }
+        .group-tree .level-top input{
+            position: relative;
+            top: 2px;
+        }
+        .group-tree .level-one{
+            margin-left: 20px;
+        }
+        .group-tree .level-one input{
+            position: relative;
+            top: 2px;
+        }
+        .group-tree .level-two{
+            margin-left: 60px;
+            display: none;
+        }
+        .group-tree span{
+            margin: 0 auto;
+        }
+        .group-tree .sub-menu{
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block page_body_left_home %}
+    <div class="home">后台管理</div>
+{% endblock %}
+
+{% block page_body_left_classify %}
+    <div class="home-classify">
+        <ul>
+            <li class="list-group-item active" name="user-manage" handle="register" onclick="QueryType(this);">人员管理</li>
+            <li class="list-group-item" name="group-manage" handle="group" onclick="QueryType(this);">群组管理</li>
+            <li class="list-group-item" name="classify-manage" handle="classify" onclick="QueryType(this);">部门分级</li>
+            <li class="list-group-item" name="limits-manage" handle="limits" onclick="QueryType(this);">权限管理</li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block page_body_right_head %}
+    {% include 'common_module/backstage_manage/manage_common_button.html' %}
+    {% include 'common_module/backstage_manage/add_panels.html' %}
+{% endblock %}
+
+{% block page_body_right_content %}
+    <div class="manage-content" style="margin-left:5px;border-top: 1px solid #ddd;">
+        <div class="user-manage">
+            <table>
+                <tr>
+                    <th></th>
+                    <th>序号</th>
+                    <th>用户名</th>
+                    <th>手机号</th>
+                    <th>邮箱</th>
+                    <th>部门</th>
+                    <th>权限</th>
+                </tr>
+                <tr>
+                    <td style="width: 5%"><input type="checkbox"/></td>
+                    <td style="width: 5%">1</td>
+                    <td style="text-align: left">1asddddasd ad </td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>1</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox"/></td>
+                    <td>1</td>
+                    <td style="text-align: left">aaaaaaaaaa</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>1</td>
+                </tr>
+            </table>
+        </div>
+        <div class="group-manage hide">
+            <div class="group-tree">
+                <ul>
+                    <li>
+                        <div class="level-top">
+                            <span class="level-top-icon"><i class="fa fa-plus-square fa-fw"></i></span>
+                            <span><input type="checkbox"/></span>
+                            <span class="level-top-name"></span>
+                        </div>
+                    </li>
+                    <ul class="sub-menu-group">
+                        <li class="sub-menu">
+                            <ul>
+                                <div class="level-one-group">
+                                    <li class="level-one-department">
+                                        <div class="level-one">
+                                            <span class="level-one-icon" ><i class="fa fa-plus-square fa-fw"></i></span>
+                                            <span><input type="checkbox"/></span>
+                                            <span class="level-one-name"><a href="#">一级部门</a></span>
+                                        </div>
+                                    </li>
+                                </div>
+                                <div class="level-two-group">
+                                    <li class="level-two-department">
+                                        <div class="level-two">
+                                            <ul >
+                                                <li>
+                                                    <span><input type="checkbox"/></span>
+                                                    <span><a href="#">二级部门</a></span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                </div>
+                            </ul>
+                        </li>
+                    </ul>
+                </ul>
+            </div>
+        </div>
+        <div class="classify-manage hide">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%"></th>
+                        <th style="width: 5%">序号</th>
+                        <th>部门级别</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="limits-manage hide">
+            <table>
+                <tr>
+                    <th></th>
+                    <th>序号</th>
+                    <th>权限名</th>
+                    <th>描述</th>
+                </tr>
+                <tr>
+                    <td style="width: 5%"><input type="checkbox"/></td>
+                    <td style="width: 5%">1 </td>
+                    <td>审核员</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td style="width: 5%"><input type="checkbox"/></td>
+                    <td style="width: 5%">1 </td>
+                    <td>审核员</td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block page-footer %}
+    <div class="page-footer"></div>
+{% endblock %}
+
+{% block script %}
+    <script src="/static/plugins/JS/jquery-3.3.1.js"></script>
+    <script src="/static/plugins/JS/jquery.cookie.js"></script>
+    <script src="/static/plugins/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+    <script src="/static/JS/settings.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
+        })
+        $(function () {
+            jQuery.extend({
+                showAddPanel:function () {
+                    $('#mask').removeClass('hide');
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    $('#'+handle).removeClass('hide');
+                    $('.page-head').css('position', '');
+                    $(document.body).css('overflow', 'hidden');
+                    return handle
+                },
+                hideAddPanel:function () {
+                    $('#mask').addClass('hide');
+                    $('.error').addClass('hide');
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    $('#'+handle).addClass('hide').find('input').val("");
+                    $(document.body).css('overflow', 'auto');
+                    // 编辑状态下关闭编辑窗口时修改button绑定的事件和文本内容
+                    if (handle == 'register'){
+
+                    } else if (handle == 'group'){
+                        // 清空选中的值
+                        $('#' + handle + ' option:selected').text("");
+                        $('#superior-group').removeClass('hide');
+                        $('#' + handle + ' .modal-footer > button').text("添加").attr('onclick', 'AddGroup();');
+                    } else if (handle == 'classify'){
+                        $('#' + handle + ' .modal-footer > button').text("添加").attr('onclick', 'AddClassify();');
+                    } else if (handle == 'limits'){
+
+                    }
+                },
+            });
+            $('.list-group-item').click(function () {
+                $(this).addClass('active').siblings().removeClass('active');
+                let name = $(this).attr('name');
+                $('.' + name).removeClass('hide').siblings().addClass('hide');
+            });
+            // 新增
+            $('#add').click(function () {
+                let handle = $.showAddPanel();
+                // 新增group时获取部门级别
+                if(handle === 'group'){
+                    $.ajax({
+                        url: '/query/',
+                        method: 'post',
+                        dataType: 'json',
+                        data: {'handle': 'classify'},
+                        success: function (data) {
+                            if(data.status = true){
+                                let sel = $('#department-level');
+                                let firstEle = sel.children().first();
+                                sel.empty().append(firstEle);
+                                for (let i=0;i<data.query_data.length;i++){
+                                    let option = "<option value="+data.query_data[i].department_level+">"
+                                                + data.query_data[i].department_level+"</option>";
+                                    sel.append(option)
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            // 编辑
+            $('#edit').click(function () {
+                let name = $('.home-classify').find('.active').attr('name');
+                // 获取选中的数据
+                let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                if(checked.length === 0){
+                    alert("请选择需要编辑的文件！");
+                }else if (checked.length > 1) {
+                    alert("请选择一个文件进行编辑！");
+                }else {
+                    $.showAddPanel();
+                    // 待获取数据并赋值
+                     let handle = $('.home-classify').find('.active').attr('handle');
+                     if (handle == 'register'){
+
+                     } else if (handle == 'group'){
+                        $.ajax({
+                            url: '/query/',
+                            method: 'post',
+                            dataType: 'json',
+                            async: false,
+                            data: {'handle': 'classify'},
+                            success: function (data) {
+                                if(data.status = true){
+                                    let sel = $('#department-level');
+                                    let firstEle = sel.children().first();
+                                    sel.empty().append(firstEle);
+                                    for (let i=0;i<data.query_data.length;i++){
+                                        let option = "<option value="+data.query_data[i].department_level+">"
+                                                    + data.query_data[i].department_level+"</option>";
+                                        sel.append(option)
+                                    }
+                                }
+                            }
+                        });
+                        let deptElem = checked.parent().next().children();
+                        let deptname = deptElem.text();
+                        let deptlevel = deptElem.attr('deptlevel');
+                        let superior = deptElem.attr('superior');
+                        console.log(deptname,deptlevel,superior)
+                        if (superior == '' || superior == null){
+                            $('#superior-group').addClass('hide');
+                            $('#department-level').val(deptlevel);
+                            $('#department-name').val(deptname);
+                        } else {
+                            if (deptlevel === oneLevelDept){
+                                data = {'superiorDept': topDept};
+                            } else if (deptlevel === twoLevelDept){
+                                data = {'superiorDept': oneLevelDept};
+                            }
+                            $.ajax({
+                                url: '/queryDeptLevel/',
+                                method: 'post',
+                                dataType: 'json',
+                                async: false,
+                                data: data,
+                                success: function (data) {
+                                    if (data.status == true){
+                                        let sel = $('#superior-department');
+                                        let firstEle = sel.children().first();
+                                        // 先清空在添加空白行
+                                        sel.empty().append(firstEle);
+                                        for (let i=0;i<data.query_data.length;i++){
+                                            let option = "<option value="+data.query_data[i].deptName+">"
+                                                        + data.query_data[i].deptName+"</option>";
+                                            sel.append(option)
+                                        }
+                                    }
+                                }
+                            })
+                            $('#department-level').val(deptlevel);
+                            $('#superior-department').val(superior);
+                            $('#department-name').val(deptname);
+                        }
+                        $('#group .modal-footer > button').text("修改").attr('onclick', 'EditGroup();');
+                     } else if (handle == 'classify'){
+                         // 获取选中数据的文本内容
+                         let classifyName = checked.parent().nextAll('[name=department-classify]').text();
+                         $('#department-classify').val(classifyName);
+                         // 进入编辑窗口后修改button绑定的事件和文本内容
+                         $('#group .modal-footer > button').text("修改").attr('onclick', 'EditClassify();');
+                     } else if (handle == 'limits'){
+
+                     }
+                }
+            });
+            // 全选
+            $('#check-all').click(function () {
+                let name = $('.home-classify').find('.active').attr('name');
+                $('.manage-content > .' + name).find('input[type="checkbox"]').prop('checked', true);
+            });
+            // 反选
+            $('#invert-sel').click(function () {
+                let name = $('.home-classify').find('.active').attr('name');
+                let checked = $('.manage-content > .' + name).find('input[type="checkbox"]');
+                console.log($(checked[0]).prop('checked'))
+                $(checked).each(function () {
+                    if ($(this).prop('checked') == true){
+                       $(this).prop('checked', false);
+                    } else {
+                       $(this).prop('checked', true);
+                    }
+                });
+            });
+            // 删除
+            $('#del').click(function () {
+                let name = $('.home-classify').find('.active').attr('name');
+                // 获取选中数据
+                let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                let handle = $('.home-classify').find('.active').attr('handle');
+                if (checked.length === 0){
+                    alert("请选择要删除的数据");
+                } else {
+                    if (handle == 'register'){
+
+                    } else if (handle == 'group'){
+
+                    } else if (handle == 'classify'){
+
+                    } else if (handle == 'limits'){
+
+                    }
+                    let classifyID = checked.parent().nextAll('[name=id]');
+                    let classifyName = checked.parent().nextAll('[name=department-classify]');
+                    let dataSet = [];
+                    for (let i=0;i<classifyID.length;i++){
+                        let data = {'id': $(classifyID[i]).text(), 'name': $(classifyName[i]).text()};
+                        dataSet.push(data);
+                    }
+                    let sendData = {'handle': handle, 'dataSet': JSON.stringify(dataSet)};
+                    $.ajax({
+                        url: '/del/',
+                        method: 'post',
+                        dataType: 'json',
+                        traditional: true,
+                        data: sendData,
+                        success: function (data) {
+                            console.log(data.status)
+                            if (data.status == true){
+                                alert('删除成功')
+                            }
+                        }
+                    });
+                }
+            });
+            $('#modal-box .close').click(function () {
+                $.hideAddPanel();
+            });
+            $('#username').blur(function () {
+                var val = $(this).val();
+                if(val.length === 0){
+                    $(this).next('.hide').removeClass('hide')
+                }else{
+                    $(this).next().addClass('hide')
+                }
+            });
+            $('#password').blur(function () {
+            var val = $(this).val();
+            if(val.length === 0){
+                $(this).next('.hide').removeClass('hide')
+            }else{
+                $(this).next().addClass('hide')
+            }
+            });
+            $('#email').blur(function () {
+                var val = $(this).val();
+                if(val.length === 0){
+                    $(this).next('.hide').removeClass('hide')
+                }else{
+                    $(this).next().addClass('hide')
+                }
+            });
+
+        });
+        function BtnMethod(url) {
+            this.url = url;
+        };
+        BtnMethod.prototype = {
+            AddEditClassify:function () {
+                let classifyName = $('#department-classify').val();
+                if(classifyName.length === 0){
+                    $('#department-classify').next().removeClass('hide');
+                    return false;
+                }else{
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    // 不同请求封装不同数据
+                    if (this.url == '/add/'){
+                        data = {'handle':handle, 'classifyName': classifyName}
+                    }else if (this.url == '/edit/'){
+                        // 获取原内容
+                        let name = $('.home-classify').find('.active').attr('name');
+                        let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                        let classifyId = checked.parent().nextAll('[name=id]').text();
+                        let rawContent = checked.parent().nextAll('[name=department-classify]').text();
+                        data = {'handle':handle, 'classifyId': classifyId, 'classifyName': classifyName, 'rawContent':rawContent }
+                    }
+                    $.ajax({
+                        url: this.url,
+                        method: 'post',
+                        dataType: 'json',
+                        data: data,
+                        success: function (data) {
+                            if(data.status === true){
+                                $.hideAddPanel();
+                                let tbody = $('.classify-manage tbody');
+                                tbody.empty();
+                                for(let i=0;i<data.query_data.length;i++){
+                                    let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                            "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                            "<td name='id' hidden>"+data.query_data[i].classifyId+"</td>"+
+                                            "<td name='department-classify'>"+data.query_data[i].department_level+"</td>";
+                                    tbody.append("<tr></tr>");
+                                    tbody.children('tr').last().append(td);
+                                }
+                            }
+                        }
+                    })
+                }
+            },
+            AddEditGroup:function () {
+                let classifyName = $('#department-level option:selected').text();
+                let superiorDeptName = $('#superior-department option:selected').text();
+                let deptName = $('#department-name').val();
+                // 验证填写内容
+                if(classifyName.length === 0){
+                    $('#department-level').next().removeClass('hide');
+                }else if(superiorDeptName.length === 0 && !$('#superior-group').hasClass('hide')){
+                    $('#department-level').next().addClass('hide');
+                    $('#superior-department').next().removeClass('hide');
+                }else if (deptName.length === 0) {
+                    $('#superior-department').next().addClass('hide');
+                    $('#department-name').next().removeClass('hide');
+                }else{
+                    $('#department-level, #department-name, #superior-department').next().addClass('hide');
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    if (this.url == '/add/'){
+                        data = {'handle':handle,'classifyName': classifyName,
+                                'deptName': deptName,'superiorDeptName':superiorDeptName};
+                    } else if (this.url == '/edit/'){
+                        let name = $('.home-classify').find('.active').attr('name');
+                        // 获取选中的数据
+                        let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                        let deptId = checked.parent().next().children().attr('deptid');
+                        let rawDeptName = checked.parent().next().children().text();
+                        data = {'handle':handle,'rawDeptName':rawDeptName,'classifyName': classifyName,
+                                'deptName': deptName,'superiorDeptName':superiorDeptName,'deptId':deptId};
+                    }
+                    $.ajax({
+                        url: this.url,
+                        method: 'post',
+                        dataType: 'json',
+                        data: data,
+                        success: function (data) {
+                            console.log(data.status)
+                            if (data.status === true){
+                                $.hideAddPanel();
+                            }
+                        }
+                    })
+                }
+            },
+        };
+
+        // 查询 导航分类数据
+        function QueryType(self) {
+            let handle = $(self).attr('handle');
+            $.ajax({
+                url:/query/,
+                method: 'post',
+                dataType: 'json',
+                data: {'handle': handle},
+                success: function (data) {
+                    if(data.status === true){
+                        if (handle == 'register'){
+
+                        } else if (handle == 'group'){
+                            // 动态生成部门结构树
+                            //let topDept = "顶级部门";
+                            //let oneLevelDept = "一级部门"
+                            //let twoLevelDept = "二级部门"
+                            let topLevel = $('.group-manage .group-tree').find('.level-top');
+                            topLevel.empty();
+                            let oneLevel = $('.group-manage .group-tree').find('.sub-menu-group');
+                            oneLevel.empty();
+                            for (let i=0;i<data.query_data.length;i++){
+                                if (data.query_data[i].deptLevel__department_level === topDept) {
+                                    let topDept = '<span class="level-top-icon"><i class="fa fa-plus-square fa-fw"></i></span>' +
+                                        '<span><input type="checkbox"/></span>' +
+                                        '<span class="level-top-name"><a href="#" deptlevel="'+data.query_data[i].deptLevel__department_level+'" ' +
+                                        'superior="'+data.query_data[i].superiorDept+'" deptid="'+data.query_data[i].id+'">'+
+                                         data.query_data[i].deptName+'</a></span>'
+                                    topLevel.append(topDept);
+                                } else if (data.query_data[i].deptLevel__department_level === oneLevelDept){
+                                    let oneLevelDept =
+                                        '<li class="sub-menu">' +
+                                        '  <ul>' +
+                                        '    <div class="level-one-group">' +
+                                        '      <li class="level-one-department">' +
+                                        '        <div class="level-one">' +
+                                        '          <span class="level-one-icon" ><i class="fa fa-plus-square fa-fw"></i></span>' +
+                                        '          <span><input type="checkbox"/></span>\n' +
+                                        '          <span class="level-one-name">' +
+                                        '            <a href="#" deptlevel="'+data.query_data[i].deptLevel__department_level+'" ' +
+                                        '            superior="'+data.query_data[i].superiorDept+'" deptid="'+data.query_data[i].id+'">'+
+                                                     data.query_data[i].deptName+'</a></span>' +
+                                        '        </div>' +
+                                        '      </li>' +
+                                        '    </div>' +
+                                        '    <div class="level-two-group"></div>' +
+                                        '  </ul>' +
+                                        '</li>';
+                                    oneLevel.append(oneLevelDept);
+                                }
+                            }
+                            let oneLevelName = $('.group-manage .group-tree').find('.level-one-name');
+                            for (let j=0;j<data.query_data.length;j++){
+                                if (data.query_data[j].deptLevel__department_level === twoLevelDept) {
+                                    for (let k=0;k<oneLevelName.length;k++) {
+                                        if (data.query_data[j].superiorDept === $(oneLevelName[k]).children().text()) {
+                                            let twoLevelDept =
+                                                '<li class="level-two-department">' +
+                                                '  <div class="level-two">' +
+                                                '    <ul >' +
+                                                '      <li>' +
+                                                '        <span><input type="checkbox"/></span>' +
+                                                '        <span class="level-one-name"><a href="#" ' +
+                                                '        deptlevel="'+data.query_data[j].deptLevel__department_level+'" ' +
+                                                '        superior="'+data.query_data[j].superiorDept+'" ' +
+                                                '        deptid="'+data.query_data[j].id+'">'+
+                                                         data.query_data[j].deptName+'</a></span>' +
+                                                '      </li>' +
+                                                '    </ul>' +
+                                                '  </div>' +
+                                                '</li>';
+                                            $(oneLevelName[k]).parents('.level-one-group').next().empty().append(twoLevelDept);
+                                        }
+                                    }
+                                }
+                            }
+                            // 顶级菜单展开折叠
+                            $('.level-top .level-top-icon, .level-top-name').click(function () {
+                                let  levelTopIcon =  $('.level-top-icon');
+                                levelTopIcon.children().toggleClass('fa-minus-square',200);
+                                let subMenu = $('.sub-menu');
+                                if(subMenu.css('display') === 'none'){
+                                    subMenu.slideDown(200);
+                                }else{
+                                    subMenu.slideUp(200);
+                                    $('.level-two').slideUp(200);
+                                    levelTopIcon.children().addClass('fa-plus-square');
+                                    $('.level-one-icon').children().removeClass('fa-minus-square');
+
+                                }
+                            });
+                            // 动态添加部门后，绑定一级菜单展开折叠事件
+                            $('.level-one-icon, .level-one-name').click(function (self) {
+                                // 获取当前所点击分类的二级分类
+                                //let levelTwo = $(this).parent().parent().parent().next().find('.level-two');
+                                let levelTwo = $(this).parents('.level-one-group').next().find('.level-two');
+                                if($(self.currentTarget).prop('class') === 'level-one-name'){
+                                    $(this).prevAll('.level-one-icon').children().toggleClass('fa-minus-square',200);
+                                    if(levelTwo.css('display') === 'none'){
+                                        levelTwo.slideDown(200);
+                                    }else{
+                                        levelTwo.slideUp(200);
+                                    }
+                                }else {
+                                    $(this).children().toggleClass('fa-minus-square',200);
+                                    if(levelTwo.css('display') === 'none') {
+                                        levelTwo.slideDown(200);
+                                    }else{
+                                        levelTwo.slideUp(200);
+                                    }
+                                }
+                            });
+                            // 按住ctrl全选
+                            $('.level-top input[type="checkbox"]').click(function () {
+                                if($(this).is(':checked') && event.ctrlKey){
+                                    $('.sub-menu input[type="checkbox"]').prop('checked', true);
+                                }else {
+                                    $('.sub-menu input[type="checkbox"]').prop('checked', false);
+                                }
+                            });
+                            $('.level-one input[type="checkbox"]').click(function () {
+                                if($(this).is(':checked') && event.ctrlKey){
+                                    $(this).parents('.level-one-group').next().find('input[type="checkbox"]').prop('checked', true);
+                                }else {
+                                    $(this).parents('.level-one-group').next().find('input[type="checkbox"]').prop('checked', false);
+                                }
+                            });
+                        } else if (handle == 'classify'){
+                            let tbody = $('.classify-manage tbody');
+                            tbody.empty();
+                            for(let i=0;i<data.query_data.length;i++){
+                                let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                        "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                        "<td name='id' hidden>"+data.query_data[i].classifyId+"</td>"+
+                                        "<td name='department-classify'>"+data.query_data[i].department_level+"</td>";
+                                tbody.append("<tr></tr>");
+                                tbody.children('tr').last().append(td);
+                            }
+                        } else if (handle == 'limits'){
+
+                        }
+                    }
+                }
+            })
+        };
+        function AddGroup() {
+            obj = new BtnMethod('/add/');
+            obj.AddEditGroup();
+        }
+        function EditGroup() {
+            obj = new BtnMethod('/edit/');
+            obj.AddEditGroup();
+        }
+        function OptionChange(self) {
+            //let topDept = "顶级部门";
+            //let oneLevelDept = "一级部门"
+            //let twoLevelDept = "二级部门"
+            let currentOption = $(self).find("option:selected").text();
+            if (currentOption === topDept){
+                $('#superior-group').addClass('hide');
+                return;
+            } else {
+                $('#superior-group').removeClass('hide');
+                if (currentOption === oneLevelDept){
+                    data = {'superiorDept': topDept};
+                } else if (currentOption === twoLevelDept){
+                    data = {'superiorDept': oneLevelDept};
+                }
+                $.ajax({
+                url: '/queryDeptLevel/',
+                method: 'post',
+                dataType: 'json',
+                data: data,
+                success: function (data) {
+                    if (data.status == true){
+                        let sel = $('#superior-department');
+                        let firstEle = sel.children().first();
+                        // 先清空在添加空白行
+                        sel.empty().append(firstEle);
+                        for (let i=0;i<data.query_data.length;i++){
+                            let option = "<option value="+data.query_data[i].deptName+">"
+                                        + data.query_data[i].deptName+"</option>";
+                            sel.append(option)
+                        }
+                    }
+                }
+            })
+            }
+        }
+        function AddClassify() {
+            obj = new BtnMethod('/add/');
+            obj.AddEditClassify();
+        }
+        function EditClassify() {
+            obj = new BtnMethod('/edit/');
+            obj.AddEditClassify();
+        }
+        function SubmitRegister() {
+            var userName = $('#username').val();
+            var pwd = $('#password').val();
+            var email = $('#email').val();
+            if(userName === "" && pwd === "" && email === ""){
+                $('#register .hide').removeClass('hide')
+            }
+            var reMail = /^(\w+)(@?)(\w+)(\.?)[a-zA-z]+$/;
+            if(userName === ""){
+                $('#username').next().removeClass('hide');
+                return false;
+            }else if(userName.length < 5 || userName.length > 16){
+                 $('#username').next().text('用户名长度不符合要求,用户名长度为5-16个字符').removeClass('hide');
+                return false
+            }else if(pwd === ""){
+                $('#password').next().removeClass('hide');
+                return false;
+            }else if(email === ""){
+                $('#email').next().removeClass('hide');
+                return false;
+            }else if(email !== "" && reMail.test(email) === false){
+                $('#email').next().text('邮箱格式错误').removeClass('hide');
+                return false;
+            }else{
+                var data = {
+                    'username': $('#username').val(),
+                    'password': $('#password').val(),
+                    'email': $('#email').val()
+                };
+                $.ajax({
+                    url: '/register',
+                    method: 'post',
+                    data: data,
+                    success: function (data) {
+                        if(data !== ''){
+                            var msg = JSON.parse(data);
+                            for(var key in msg){
+                                $('#'+key).next().text(msg[key]).removeClass('hide')
+                            }
+                        }
+                    }
+                });
+                location.href = 'http://127.0.0.1:9000/index'
+            }
+        };
+    </script>
+{% endblock %}

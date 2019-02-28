@@ -1,0 +1,172 @@
+<div id="modal-box">
+    <div id="mask" class="mask hide"></div>
+    <div id="panel-user" class="hide" role="dialog" aria-labelledby="exampleModalLabel" style="top: -8%">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                    <h4 class="modal-title">人员管理</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label"><span class="mark-required">*</span>用户名:</label>
+                        <input type="text" name="username" id="username" class="form-control">
+                        <span class="error hide">用户名不能为空</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label"><span class="mark-required">*</span>显示名称:</label>
+                        <input type="text" name="show-username" id="show-username" class="form-control">
+                        <span class="error hide">显示名称不能为空</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label"><span class="mark-required">*</span>密码:</label>
+                        <input type="password" name="password" id="password" class="form-control">
+                        <span class="error hide">密码不能为空</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">邮箱:</label>
+                        <input type="email" name="email" id="email" class="form-control">
+                        <span class="error hide">邮箱不能为空</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">手机号:</label>
+                        <input type="text" name="phone-number" id="phone-number" class="form-control">
+                        <span class="error hide">手机号不能为空</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label"><span class="mark-required">*</span>部门:</label>
+                        <select name="reg-department" id="reg-department" class="form-control">
+                            <option value="" disabled selected >请选择部门</option>
+                        </select>
+                        <span class="error hide">部门不能为空</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">权限:</label>
+                        <select title="请选择权限" name="reg-permission" id="reg-permission" class="form-control selectpicker" multiple>
+                        </select>
+                        <span class="error hide">权限不能为空</span>
+                    </div>
+                  <div class="modal-footer footer-btn" >
+                        <button type="button" class="btn btn-primary" style="width: 40%" onclick="AddUser()">注册</button>
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div id="panel-department" class="hide" role="dialog" aria-labelledby="exampleModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title">部门管理</h4>
+          </div>
+          <div class="modal-body">
+              <div class="form-group">
+                  <label for="recipient-name" class="control-label">部门级别:</label>
+                  <select id="department-level" name="department-level" class="form-control" onchange="OptionChange(this);">
+                      <option value=""></option>
+                  </select>
+                  <span class="error hide">请选择部门级别</span>
+              </div>
+              <div class="form-group" id="superior-group">
+                  <label for="recipient-name" class="control-label">上级部门:</label>
+                  <select id="superior-department" name="superior-department" class="form-control">
+                      <option value=""></option>
+                  </select>
+                  <span class="error hide">请选择上级部门</span>
+              </div>
+              <div class="form-group">
+                  <label for="recipient-name" class="control-label">部门名称:</label>
+                  <input type="text" name="department-name" id="department-name" class="form-control">
+                  <span class="error hide">请填写部门名称</span>
+              </div>
+              <div class="modal-footer footer-btn" >
+                  <button type="button" class="btn btn-primary" style="width: 40%" onclick="AddDepartment()">添加</button>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="panel-dept-level" class="hide" role="dialog" aria-labelledby="exampleModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title">部门级别</h4>
+          </div>
+          <div class="modal-body">
+              <div class="form-group">
+                  <label for="department-level-2" class="control-label">部门级别:</label>
+                  <input type="text" name="department-level-2" id="department-level-2" class="form-control">
+                  <span class="error hide">填写内容不能为空</span>
+              </div>
+              <div class="form-group" >
+                  <label for="superior-correlate" class="control-label">上级关联:</label>
+                  <select id="superior-correlate" name="superior-correlate" class="form-control">
+                      <option value=""></option>
+                  </select>
+                  <span class="error hide">请选择上级关联的数据</span>
+              </div>
+              <div class="modal-footer footer-btn" >
+                  <button type="button" class="btn btn-primary" style="width: 40%" onclick="AddDeptLevel()">添加</button>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="panel-permission" class="hide" role="dialog" aria-labelledby="exampleModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">权限管理</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="permission-name" class="control-label">权限名称:</label>
+                        <input type="text" name="permission-name" id="permission-name" class="form-control">
+                        <span class="error hide">填写内容不能为空</span>
+                    </div>
+                    <div class="modal-footer footer-btn" >
+                        <button type="button" class="btn btn-primary" style="width: 40%" onclick="AddPermission()">添加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="panel-knowledge" class="hide" role="dialog" aria-labelledby="exampleModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title">知识分类</h4>
+          </div>
+          <div class="modal-body">
+              <div class="form-group">
+                  <label for="knowledge-category" class="control-label">知识类别:</label>
+                  <input type="text" name="knowledge-category" id="knowledge-category" class="form-control">
+                  <span class="error hide">请填写知识类别</span>
+              </div>
+              <div class="form-group">
+                  <label for="classify-name" class="control-label">分类名称:</label>
+                  <input type="text" name="classify-name" id="classify-name" class="form-control">
+                  <span class="error hide">请填写分类名称</span>
+              </div>
+              <div class="modal-footer footer-btn" >
+                  <button type="button" class="btn btn-primary" style="width: 40%" onclick="AddKnowledgeClassify()">添加</button>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>

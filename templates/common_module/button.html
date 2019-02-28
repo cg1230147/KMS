@@ -1,0 +1,24 @@
+{# 公共组件 #}
+<div style="height: 40px">
+    <div class="body-btn btn-group pull-left">
+        <!-- IE浏览器或 360浏览器等等 button包含a标签时回忽略 href 属性 -->
+{#        <button class="btn btn-default"><a href="{% url "release" %}">发布</a></button>#}
+        <button class="btn btn-default" onclick="window.open('/release/')">发布</button>
+        <button class="btn btn-default">全选</button>
+        <button class="btn btn-default">反选</button>
+        <button class="btn btn-default">删除</button>
+    </div>
+    <!--
+    <div class="search btn-group-sm">
+        <input type="text" name="search"/>
+        <button class="btn btn-default" style="height: 28px;width: 50px;text-align: center;">搜索</button>
+    </div>-->
+        <div class="col-lg-6 pull-right" >
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="关键字">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">搜索</button>
+                </span>
+            </div>
+        </div>
+</div>

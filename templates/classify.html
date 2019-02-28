@@ -1,0 +1,62 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    <title>知识管理系统</title>
+{% endblock %}
+
+{% block style %}{% endblock %}
+
+{% block page_body_left_home %}
+    <div class="home">知识分类</div>
+{% endblock %}
+
+{% block page_body_left_classify %}
+    <div class="home-classify">
+        <ul class="list-group">
+            <li class="list-group-item">Domino9.0</li>
+            <li class="active list-group-item">Domino8.0</li>
+            <li class="list-group-item">java1.0</li>
+            <li class="list-group-item">java2.0</li>
+            <li class="list-group-item">华能移动办公</li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block page_body_right_head %}
+    {% include 'common_module/button.html' %}
+{% endblock %}
+
+{% block page_body_right_content %}
+    <div class="content" style="padding-left:5px;">
+        <table>
+            <tr>
+                <th></th>
+                <th style="width: 40%">标题</th>
+                <th>发布人</th>
+                <th>分类</th>
+                <th>发布日期</th>
+                <th>备注</th>
+            </tr>
+            <tr>
+                <td style="width: 5%"><input type="checkbox"/></td>
+                <td style="text-align: left">1asddddasd ad </td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox"/></td>
+                <td style="text-align: left">aaaaaaaaaa</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+            </tr>
+        </table>
+    </div>
+{% endblock %}
+
+{% block page-footer %}
+    <div class="page-footer"></div>
+{% endblock %}

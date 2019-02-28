@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" charset="UTF-8">
+    {% block title %}<title></title>{% endblock %}
+    <link href="/static/plugins/bootstrap-3.3.7-dist/css/bootstrap.css" type="text/css" rel="stylesheet">
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        a{
+            text-decoration: none;
+        }
+        ul{
+            list-style: none;
+        }
+        .page-head{
+            width: 100%;
+            height: 50px;
+            {#background-color: #002140;#}
+            background-color: #286090;
+            position: fixed;
+            z-index: 10;
+        }
+        .page-head .head-content .logo{
+            height: 50px;
+            {#background-color: #002140;#}
+            color: white;
+            line-height: 50px;
+            margin-left: 5%;
+            float: left;
+        }
+        .page-head .head-content .nav-bar{
+            float: left;
+            line-height: 50px;
+            margin-left: 5%;
+        }
+        .page-head .head-content .nav-bar li{
+            float: left;
+            color: #dddddd;
+            height: 50px;
+            width: 100px;
+            text-align: center;
+        }
+        .page-head .head-content .nav-bar li:hover{
+            background-color: #003152;
+            cursor: pointer;
+            color: white;
+        }
+        .page-head .head-content .account{
+            float: right;
+            color: white;
+            line-height: 50px;
+            margin-right: 5%;
+        }
+        .page-head .head-content .account a:link{
+            color: white;
+        } a:visited{
+            color: white;}
+    </style>
+    {% block style %}{% endblock %}
+</head>
+<body>
+    <div class="page-head">
+        <div class="head-content">
+            <div class="logo"><p style="font-size: 18px">KMS知识管理系统</p></div>
+            <div class="nav-bar">
+                <ul>
+                    <li>首&nbsp页</li>
+                    <li>知识分类</li>
+                </ul>
+            </div>
+            <div class="account">
+                <span>您好:</span>
+                <a href="http://127.0.0.1:8000">Admin</a>
+                <a href="http://127.0.0.1:8000">退出</a>
+            </div>
+        </div>
+    </div>
+    {% block page-body %}{% endblock %}
+    {% block page-footer %}{% endblock %}
+</body>
+</html>

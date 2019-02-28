@@ -1,0 +1,958 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+    <title>知识管理系统后台管理</title>
+{% endblock %}
+
+{% block style %}
+    <link href="/static/css/treeview.css" rel="stylesheet" type="text/css">
+    <link href="/static/plugins/css/bootstrap-select.min.css" rel="stylesheet" type="text/css">
+    <style>
+        #panel-user .footer-btn, #panel-dept-level .footer-btn, #panel-department .footer-btn, #panel-permission .footer-btn, #knowledge .footer-btn, #panel-knowledge .footer-btn{
+            text-align: center;
+            border: transparent;
+        }
+        #panel-user, #panel-dept-level, #panel-department, #panel-permission, #panel-knowledge{
+            position: absolute;
+            top: -23px;
+            left: 16%;
+            z-index: 12;
+        }
+        #panel-user .form-group, #panel-dept-level .form-group, #panel-department .form-group, #panel-permission .form-group, #knowledge.form-group, #panel-knowledge .form-group{
+            margin-bottom: 5px;
+        }
+
+        .hide{
+            display: none;
+        }
+        .error{
+            color: #a94442;
+            position: absolute;
+            right: 16px;
+        }
+        #mask{
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            position: fixed;
+            background: rgba(251,251,251,0.5);
+            z-index: 11;
+            overflow-y: scroll;
+        }
+        .manage-content{
+            height: 93%;
+            <!--width: 100%;-->
+        }
+        .department-manage, .knowledge-manage{
+            width: 265px;
+            height: 100%;
+            overflow-y: scroll;
+            box-shadow: 2px 0 6px rgba(0,21,41,.50);
+        }
+        .mark-required{
+            color: red;
+        }
+    </style>
+{% endblock %}
+
+{% block page_body_left_home %}
+    <div class="home">后台管理</div>
+{% endblock %}
+
+{% block page_body_left_classify %}
+    <div class="home-classify">
+        <ul>
+            <li class="list-group-item active" name="user-manage" handle="panel-user" onclick="NavClassify(this);">人员管理</li>
+            <li class="list-group-item" name="department-manage" handle="panel-department" onclick="NavClassify(this);">部门管理</li>
+            <li class="list-group-item" name="dept-level-manage" handle="panel-dept-level" onclick="NavClassify(this);">部门级别</li>
+            <li class="list-group-item" name="permission-manage" handle="panel-permission" onclick="NavClassify(this);">权限管理</li>
+            <li class="list-group-item" name="knowledge-manage" handle="panel-knowledge" onclick="NavClassify(this);">知识分类</li>
+            <li class="list-group-item" name="homepage-manage" handle="panel-homepage" onclick="NavClassify(this);">首页管理</li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block page_body_right_head %}
+    {% include 'common_module/backstage_manage/manage_common_button.html' %}
+    {% include 'common_module/backstage_manage/add_panels.html' %}
+{% endblock %}
+
+{% block page_body_right_content %}
+    <div class="manage-content" style="margin-left:5px;border-top: 1px solid #ddd;">
+        <div class="user-manage">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>序号</th>
+                        <th>用户名</th>
+                        <th>显示名称</th>
+                        <th>手机号</th>
+                        <th>邮箱</th>
+                        <th>部门</th>
+                        <th>权限</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="department-manage hide">
+            <div id="dept-tree" class="tree-form"></div>
+        </div>
+        <div class="dept-level-manage hide">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%"></th>
+                        <th style="width: 5%">序号</th>
+                        <th>部门级别</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="permission-manage hide">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%"></th>
+                        <th style="width: 5%">序号</th>
+                        <th>权限名称</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="knowledge-manage hide">
+            <div id="knowledge-tree" class="tree-form"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block page-footer %}
+    <div class="page-footer"></div>
+{% endblock %}
+
+{% block script %}
+    <script src="/static/plugins/js/jquery-3.3.1.js"></script>
+    <script src="/static/plugins/js/jquery.cookie.js"></script>
+    <script src="/static/plugins/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+    <script src="/static/js/treeview.js" type="text/javascript"></script>
+    <script src="/static/plugins/js/bootstrap-select.min.js"></script>
+    <script src="/static/plugins/js/defaults-zh_CN.min.js"></script>
+    <script src="/static/js/settings.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
+        })
+        $(function () {
+            jQuery.extend({
+                showAddPanel:function () {
+                    $('#mask').removeClass('hide');
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    $('#'+handle).removeClass('hide');
+                    $('.page-head').css('position', '');
+                    $(document.body).css('overflow', 'hidden');
+                    return handle
+                },
+                hideAddPanel:function () {
+                    $('#mask').addClass('hide');
+                    $('.error').addClass('hide');
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    $('#'+handle).addClass('hide').find('input').val("");
+                    $(document.body).css('overflow', 'auto');
+                    // 编辑状态下关闭编辑窗口时重置button绑定的事件和文本内容
+                    if (handle == 'panel-user'){
+                        $('#' + handle + ' .modal-footer > button').text("注册").attr('onclick', 'AddUser();');
+                    } else if (handle == 'panel-department'){
+                        // 清空选中的值
+                        $('#' + handle + ' option:selected').text("");
+                        $('#superior-group').removeClass('hide');
+                        $('#' + handle + ' .modal-footer > button').text("添加").attr('onclick', 'AddDepartment();');
+                    } else if (handle == 'panel-dept-level'){
+                        $('#' + handle + ' .modal-footer > button').text("添加").attr('onclick', 'AddDeptLevel();');
+                    } else if (handle == 'panel-permission'){
+                        $('#' + handle + ' .modal-footer > button').text("添加").attr('onclick', 'AddPermission();');
+                    } else if (handle == 'panel-knowledge'){
+                        $('#' + handle + ' .modal-footer > button').text("添加").attr('onclick', 'AddKnowledgeClassify();');
+                    }
+                },
+                getDeptList:function () {
+                    // 新增或编辑人员时查询所有的部门列表
+                    $.ajax({
+                        url: '/query_dept_list/',
+                        method: 'get',
+                        dataType: 'json',
+                        async: false,
+                        success: function (data) {
+                            if (data.status == true){
+                                let sel = $('#reg-department');
+                                let firstEle = sel.children().first();
+                                // 先清空在添加空白行
+                                sel.empty().append(firstEle);
+                                for (let i=0;i<data.query_data.length;i++){
+                                    let option = "<option value="+data.query_data[i].id+">"
+                                                + data.query_data[i].dept_name+"</option>";
+                                    sel.append(option)
+                                }
+                            }
+                        }
+                    });
+                    return true;
+                },
+                getPermission:function () {
+                    // 新增或编辑人员时查询所有的权限列表
+                    $.ajax({
+                        url: '/query/',
+                        method: 'post',
+                        dataType: 'json',
+                        async: false,
+                        data: {'handle': 'panel-permission'},
+                        success: function (data) {
+                            if (data.status == true){
+                                let sel = $('#reg-permission');
+                                sel.empty();
+                                for (let i=0;i<data.query_data.length;i++){
+                                    let option = "<option value="+data.query_data[i].permitId+">"
+                                                + data.query_data[i].permitName+"</option>";
+                                    sel.append(option)
+                                }
+                                // 动态添加数据'refresh'
+                                $('.selectpicker').selectpicker('refresh');
+                            }
+                        }
+                    });
+                    return true;
+                }
+            });
+            // 左侧导航切换
+            $('.list-group-item').click(function () {
+                $(this).addClass('active').siblings().removeClass('active');
+                let name = $(this).attr('name');
+                $('.' + name).removeClass('hide').siblings().addClass('hide');
+            });
+            // 新增
+            $('#add').click(function () {
+                let handle = $.showAddPanel();
+                // 新增group时获取部门级别
+                if(handle === 'panel-department'){
+                    $.ajax({
+                        url: '/query/',
+                        method: 'post',
+                        dataType: 'json',
+                        data: {'handle': 'panel-dept-level'},
+                        success: function (data) {
+                            if(data.status = true){
+                                let sel = $('#department-level');
+                                let firstEle = sel.children().first();
+                                sel.empty().append(firstEle);
+                                for (let i=0;i<data.query_data.length;i++){
+                                    let option = "<option value="+data.query_data[i].department_level+" supCorrelateId="+
+                                                    data.query_data[i].superior_correlate_id+">"+
+                                                    data.query_data[i].department_level+"</option>";
+                                    sel.append(option)
+                                }
+                            }
+                        }
+                    });
+                }else if (handle === 'panel-dept-level') {
+                    let level = $('.dept-level-manage [name=department-level]');
+                    let correlate = $('#superior-correlate');
+                    let firstEle = correlate.children().first();
+                    // 清空并添加空白行
+                    correlate.empty().append(firstEle);
+                    for (let i=0;i<level.length;i++){
+                        let levelText = $(level[i]).text();
+                        let levelId = $(level[i]).prev().text();
+                        correlate.append('<option value="'+levelId+'">'+levelText+'</option>')
+                    }
+                    // 第一次添加时不显示上级关联
+                    if (correlate.children().text().length === 0){
+                        correlate.parent().addClass('hide');
+                    }else {
+                        correlate.parent().removeClass('hide');
+                    }
+                }else if (handle === 'panel-user'){
+                    $.getDeptList();    // 查询所有部门
+                    $.getPermission();  // 查询所有权限
+                }
+            });
+            // 编辑
+            $('#edit').click(function () {
+                let name = $('.home-classify').find('.active').attr('name');
+                // 获取选中的数据
+                let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                if(checked.length === 0){
+                    alert("请选择需要编辑的文件！");
+                }else if (checked.length > 1) {
+                    alert("请选择一个文件进行编辑！");
+                }else {
+                    $.showAddPanel();
+                    // 待获取数据并赋值
+                     let handle = $('.home-classify').find('.active').attr('handle');
+
+                     if (handle == 'panel-user'){
+                        if ($.getDeptList() == true && $.getPermission() == true){
+                            let parent = checked.parent();
+                            // 获取原数据
+                            let username = parent.nextAll('[name=username]').text();
+                            let show_name = parent.nextAll('[name=show_name]').text();
+                            let password = parent.nextAll('[name=password]').text()
+                            let email = parent.nextAll('[name=email]').text();
+                            let phone_number = parent.nextAll('[name=phone_number]').text();
+                            let deptID = parent.nextAll('[name=dept-name]').attr('deptid');
+                            let permissionID = parent.nextAll('[name=permissions]').attr('permissionsid');
+                            $('#username').val(username);
+                            $('#show-username').val(show_name);
+                            $('#password').val(password)
+                            $('#email').val(email);
+                            $('#phone-number').val(phone_number);
+                            $('#reg-department').val(deptID);
+                            $('#reg-permission').selectpicker('val',permissionID.split(','));
+
+                            $('#panel-user .modal-footer > button').text("修改").attr('onclick', 'EditUser();');
+                        }
+
+                     } else if (handle == 'panel-department'){
+                         $.ajax({
+                            url: '/query/',
+                            method: 'post',
+                            dataType: 'json',
+                            async: false,
+                            data: {'handle': 'panel-dept-level'},
+                            success: function (data) {
+                                if(data.status = true){
+                                    let sel = $('#department-level');
+                                    let firstEle = sel.children().first();
+                                    sel.empty().append(firstEle);
+                                    console.log(data.query_data)
+                                    for (let i=0;i<data.query_data.length;i++){
+                                        let option = "<option value="+data.query_data[i].department_level+" supCorrelateId="+data.query_data[i].superior_correlate_id+">"
+                                                    + data.query_data[i].department_level+"</option>";
+                                        sel.append(option)
+                                    }
+                                }
+                            }
+                        });
+                         let deptElem = checked.parent().next().children();
+                         let deptName = deptElem.text();
+                         let deptlevel = deptElem.attr('deptlevel');
+                         let superiorDeptId = deptElem.attr('superiordeptid');
+                         if (superiorDeptId == '' || superiorDeptId == null || superiorDeptId == 'null'){
+                            $('#superior-group').addClass('hide');
+                            $('#department-level').val(deptlevel);
+                            $('#department-name').val(deptName);
+                         } else {
+                            $.ajax({
+                                url: '/query_dept_level/',
+                                method: 'post',
+                                dataType: 'json',
+                                async: false,
+                                data: data = {'superiorDeptId': superiorDeptId},
+                                success: function (data) {
+                                    if (data.status == true){
+                                        let sel = $('#superior-department');
+                                        let firstEle = sel.children().first();
+                                        // 先清空在添加空白行
+                                        sel.empty().append(firstEle);
+                                        for (let i=0;i<data.query_data.length;i++){
+                                            let option = "<option value="+data.query_data[i].id+">"
+                                                        + data.query_data[i].dept_name+"</option>";
+                                            sel.append(option)
+                                        }
+                                    }
+                                }
+                            })
+                            $('#department-level').val(deptlevel);
+                            $('#superior-department').val(superiorDeptId);
+                            $('#department-name').val(deptName);
+                        }
+                        $('#panel-department .modal-footer > button').text("修改").attr('onclick', 'EditDepartment();');
+
+                     } else if (handle == 'panel-dept-level'){
+
+                        let allDeptLevel = $('.dept-level-manage [name=department-level]'); // 获取所有部门级别
+                        let correlate = $('#superior-correlate');
+                        let supid = checked.parent().nextAll('[name=department-level]').attr('supid');  // 上级关联ID
+                        if (supid === 'null' || supid === '0'){      //  为空或0时说明编辑的为顶级部门
+                            correlate.parent().addClass('hide');
+                        }else {
+                            correlate.parent().removeClass('hide');
+                        }
+                        // let firstEle = correlate.children().first();
+                        // 清空并添加空白行
+                        correlate.empty().append('<option value=""></option>');
+                        // 添加上级关联列表
+                        for (let i=0;i<allDeptLevel.length;i++){
+                            let levelText = $(allDeptLevel[i]).text();
+                            let levelId = $(allDeptLevel[i]).prev().text();
+                            correlate.append('<option value="'+levelId+'">'+levelText+'</option>')
+                        }
+                        // 获取当前选中数据的文本内容
+                        let level = checked.parent().nextAll('[name=department-level]');
+                        let deptLevel = level.text();
+                        let supId = level.attr('supid')
+                        $('#department-level-2').val(deptLevel);
+                        $('#superior-correlate').val(supId);
+                        // 进入编辑窗口后修改button绑定的事件和文本内容
+                        $('#panel-dept-level .modal-footer > button').text("修改").attr('onclick', 'EditDeptLevel();');
+
+                     } else if (handle == 'panel-permission'){
+                         let permission = checked.parent().nextAll('[name=permission-name]');
+                         let permitName = permission.text();
+                         $('#permission-name').val(permitName);
+                         $('#panel-permission .modal-footer > button').text("修改").attr('onclick', 'EditPermission();');
+                     } else if (handle == 'panel-knowledge'){
+                         let classifyName = checked.parent().next().children().text();
+                         let category = checked.parent().next().children().attr('category');
+                         $('#knowledge-category').val(category)
+                         $('#classify-name').val(classifyName);
+                         $('#panel-knowledge .modal-footer > button').text("修改").attr('onclick', 'EditKnowledgeClassify();');
+                     }
+
+                }
+            });
+            // 全选
+            $('#check-all').click(function () {
+                let name = $('.home-classify').find('.active').attr('name');
+                $('.manage-content > .' + name).find('input[type="checkbox"]').prop('checked', true);
+            });
+            // 反选
+            $('#invert-sel').click(function () {
+                let name = $('.home-classify').find('.active').attr('name');
+                let checked = $('.manage-content > .' + name).find('input[type="checkbox"]');
+                $(checked).each(function () {
+                    if ($(this).prop('checked') == true){
+                       $(this).prop('checked', false);
+                    } else {
+                       $(this).prop('checked', true);
+                    }
+                });
+            });
+            // 删除
+            $('#del').click(function () {
+                let name = $('.home-classify').find('.active').attr('name');
+                // 获取选中数据
+                let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                let handle = $('.home-classify').find('.active').attr('handle');
+                let dataSet = [];   // 选中的结果集合
+                if (checked.length === 0) {
+                    alert("请选择要删除的数据");
+                } else {
+                    var msg = confirm('你确定要删除选中的内容吗？')
+                    if (msg === true) {
+                        if (handle == 'panel-user') {
+                            let uid = checked.parent().nextAll('[name=uid]');
+                            let username = checked.parent().nextAll('[name=username]');
+                            for (let i = 0; i < uid.length; i++) {
+                                let data = {'id': $(uid[i]).text(), 'name': $(username[i]).text()};
+                                dataSet.push(data);
+                            }
+                        } else if (handle == 'panel-department') {
+                            if (checked.parent().parent().next().length > 0) {
+                                alert('请确保该部门下没有子部门在执行删除！');
+                                return;
+                            } else {
+                                let group = checked.parent().nextAll('.node-name').children();
+                                for (let i = 0; i < group.length; i++) {
+                                    let data = {'id': group.attr('deptid'), 'name': group.text()};
+                                    dataSet.push(data);
+                                }
+                            }
+                        } else if (handle == 'panel-dept-level') {
+                            let levelID = checked.parent().nextAll('[name=id]');
+                            let deptLevel = checked.parent().nextAll('[name=department-level]');
+                            for (let i = 0; i < levelID.length; i++) {
+                                let data = {'id': $(levelID[i]).text(), 'name': $(deptLevel[i]).text()};
+                                dataSet.push(data);
+                            }
+                        } else if (handle == 'panel-permission') {
+                            let permitId = checked.parent().nextAll('[name=id]');
+                            let permitName = checked.parent().nextAll('[name=permission-name]');
+                            for (let i = 0; i < permitId.length; i++) {
+                                let data = {'id': $(permitId[i]).text(), 'name': $(permitName[i]).text()};
+                                dataSet.push(data);
+                            }
+                        } else if (handle == 'panel-knowledge') {
+                            // 获取当前选中数据的内容标签
+                            let elem = checked.parent().next().children();
+                            for (let i=0;i<elem.length;i++){
+                                let data = {'classifyName': $(elem[i]).text(), 'knowledgeCategory': $(elem[i]).attr('category')};
+                                dataSet.push(data);
+                            }
+                        }
+                        let sendData = {'handle': handle, 'dataSet': JSON.stringify(dataSet)};
+                        $.ajax({
+                            url: '/del/',
+                            method: 'post',
+                            dataType: 'json',
+                            traditional: true,
+                            data: sendData,
+                            success: function (data) {
+                                if (data.status == true) {
+                                    alert('删除成功')
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+            $('#modal-box .close').click(function () {
+                $.hideAddPanel();
+            });
+            // 注册验证
+            $('#username, #password, #reg-department, #show-username').blur(function () {
+                var val = $(this).val();
+                if(val == null || val.length === 0){
+                    $(this).next('.hide').removeClass('hide')
+                }else{
+                    $(this).next().addClass('hide')
+                }
+            });
+
+        });
+        function BtnMethod(url) {
+            this.url = url;
+        };
+        BtnMethod.prototype = {
+            AddEditUser:function(){
+                var userName = $('#username').val();
+                var showUsername = $('#show-username').val();
+                var password = $('#password').val();
+                var email = $('#email').val();
+                var phoneNumber = $('#phone-number').val();
+                var regDepartment = $('#reg-department option:selected').val();
+                var regPermission = $('#reg-permission').val();
+                if(userName == "" && showUsername == "" && password == "" && regDepartment == ""){
+                    $('#panel-user .mark-required').parent().nextAll('.error').removeClass('hide');
+                    return false;
+                }
+                var reMail = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+                var rePhone=/^[1][3,4,5,7,8][0-9]{9}$/;
+                if (reMail.test(email)){
+                    $('#email').next().addClass('hide');
+                } else if (rePhone.test(phoneNumber)){
+                    $('#phone-number').next().addClass('hide')
+                }
+                if(userName == ""){
+                    $('#username').next().removeClass('hide');
+                    return false;
+                }else if (showUsername == ""){
+                    $('#show-username').next().removeClass('hide');
+                }else if(userName.length < 4 || userName.length > 16){
+                     $('#username').next().text('用户名长度应为4-16个字符').removeClass('hide');
+                    return false
+                }else if(password == ""){
+                    $('#password').next().removeClass('hide');
+                    return false;
+                }else if(email !== "" && reMail.test(email) == false){
+                    $('#email').next().text('邮箱格式错误').removeClass('hide');
+                    return false;
+                }else if(phoneNumber !== "" && rePhone.test(phoneNumber) == false){
+                    $('#phone-number').next().text('手机号格式错误').removeClass('hide');
+                    return false;
+                }else if (regDepartment == ""){
+                    $('#reg-department').next().removeClass('hide');
+                } else{
+                    var handle = $('.home-classify').find('.active').attr('handle');
+                    if (this.url == '/add/'){
+                        var data = {
+                            'handle': handle,
+                            'username': userName,
+                            'showUsername': showUsername,
+                            'password': password,
+                            'email': email,
+                            'phoneNumber': phoneNumber,
+                            'regDepartment': regDepartment,
+                            'regPermission': JSON.stringify(regPermission),
+                        }
+                    } else if (this.url == '/edit/'){
+                        // 获取原数据的uid，username值
+                        let name = $('.home-classify').find('.active').attr('name');
+                        let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                        let uid = checked.parent().nextAll('[name=uid]').text();
+                        let rawUsername = checked.parent().nextAll('[name=username]').text();
+                        let rawPassword = checked.parent().nextAll('[name=password]').text();
+                        var data = {
+                            'handle': handle,
+                            'uid': uid,
+                            'rawUsername': rawUsername,
+                            'rawPassword': rawPassword,
+                            'username': userName,
+                            'showUsername': showUsername,
+                            'password': password,
+                            'email': email,
+                            'phoneNumber': phoneNumber,
+                            'regDepartment': regDepartment,
+                            'regPermission': JSON.stringify(regPermission),
+                        }
+                    }
+                    $.ajax({
+                        url: this.url,
+                        method: 'post',
+                        dataType: 'json',
+                        data: data,
+                        success: function (data) {
+                            if (data.status == false){
+                                for (let key in data.message){
+                                    $('[name='+key+']').next().removeClass('hide').text(data.message[key][0].message);
+                                }
+                            }else if (data.status == true) {
+                                alert(data.message);
+                            }
+                        }
+                    });
+                    // location.href = 'http://127.0.0.1:9000/index'
+                }
+            },
+            AddEditDeptLevel:function () {
+                let deptLevel = $('#department-level-2').val();
+                let supCorrelate = $('#superior-correlate option:selected').val() | '';
+                console.log(supCorrelate)
+                if(deptLevel.length === 0){
+                    $('#department-level-2').next().removeClass('hide');
+                    return false;
+                }else if (supCorrelate.length === 0 && !$('#superior-correlate').parent().hasClass('hide')){
+                    $('#department-level-2').next().addClass('hide');
+                    $('#superior-correlate').next().removeClass('hide');
+                    return false
+                }else{
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    // 不同请求封装不同数据
+                    if (this.url == '/add/'){
+                        data = {'handle':handle, 'deptLevel': deptLevel,'supCorrelate':supCorrelate}
+                    }else if (this.url == '/edit/'){
+                        // 获取原内容
+                        let name = $('.home-classify').find('.active').attr('name');
+                        let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                        let levelId = checked.parent().nextAll('[name=id]').text();
+                        let rawContent = checked.parent().nextAll('[name=department-level]').text();
+                        data = {'handle':handle, 'levelId': levelId, 'deptLevel': deptLevel, 'rawContent':rawContent,'supCorrelate':supCorrelate }
+                    }
+                    $.ajax({
+                        url: this.url,
+                        method: 'post',
+                        dataType: 'json',
+                        data: data,
+                        success: function (data) {
+                            if(data.status === true){
+                                $.hideAddPanel();
+                                let tbody = $('.dept-level-manage tbody');
+                                tbody.empty();
+                                for(let i=0;i<data.query_data.length;i++){
+                                    let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                            "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                            "<td name='id' hidden>"+data.query_data[i].levelId+"</td>"+
+                                            "<td name='department-level' supid='"+data.query_data[i].superior_correlate_id+"'>"+
+                                            data.query_data[i].department_level+"</td>";
+                                    tbody.append("<tr></tr>");
+                                    tbody.children('tr').last().append(td);
+                                }
+                            }
+                        }
+                    })
+                }
+            },
+            AddEditDepartment:function () {
+                let deptLevel = $('#department-level option:selected').text();
+                let superiorDeptId = $('#superior-department option:selected').val();
+                let deptName = $('#department-name').val();
+                // 验证填写内容
+                if(deptLevel.length === 0){
+                    $('#department-level').next().removeClass('hide');
+                }else if(superiorDeptId.length === 0 && !$('#superior-group').hasClass('hide')){
+                    $('#department-level').next().addClass('hide');
+                    $('#superior-department').next().removeClass('hide');
+                }else if (deptName.length === 0) {
+                    $('#superior-department').next().addClass('hide');
+                    $('#department-name').next().removeClass('hide');
+                }else{
+                    $('#department-level, #department-name, #superior-department').next().addClass('hide');
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    if (this.url == '/add/'){
+                        data = {'handle':handle,'deptLevel': deptLevel,
+                                'deptName': deptName,'superiorDeptId':superiorDeptId};
+                    } else if (this.url == '/edit/'){
+                        let name = $('.home-classify').find('.active').attr('name');
+                        // 获取选中的数据
+                        let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                        let deptId = checked.parent().nextAll('.node-name').children().attr('deptid');
+                        let rawDeptName = checked.parent().nextAll('.node-name').children().text();
+                        data = {'handle':handle,'rawDeptName':rawDeptName,'deptLevel': deptLevel,
+                                'deptName': deptName,'superiorDeptId':superiorDeptId,'deptId':deptId};
+                    }
+                    $.ajax({
+                        url: this.url,
+                        method: 'post',
+                        dataType: 'json',
+                        data: data,
+                        success: function (data) {
+                            if (data.status === true){
+                                $.hideAddPanel();
+                            }
+                        }
+                    })
+                }
+            },
+            AddEditPermission:function () {
+                let permitName = $('#permission-name').val();
+                if(permitName.length === 0){
+                    $('#permission-name').next().removeClass('hide');
+                    return false;
+                }else{
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    // 不同请求封装不同数据
+                    if (this.url == '/add/'){
+                        data = {'handle':handle, 'permitName': permitName}
+                    }else if (this.url == '/edit/'){
+                        // 获取原内容
+                        let name = $('.home-classify').find('.active').attr('name');
+                        let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                        let permitId = checked.parent().nextAll('[name=id]').text();
+                        let rawContent = checked.parent().nextAll('[name=permission-name]').text();
+                        data = {'handle':handle, 'permitId': permitId,
+                                'permitName': permitName, 'rawContent':rawContent}
+                    }
+                    $.ajax({
+                        url: this.url,
+                        method: 'post',
+                        dataType: 'json',
+                        data: data,
+                        success: function (data) {
+                            if(data.status === true){
+                                $.hideAddPanel();
+                                let tbody = $('.permission-manage tbody');
+                                tbody.empty();
+                                for(let i=0;i<data.query_data.length;i++){
+                                    let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                            "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                            "<td name='id' hidden>"+data.query_data[i].permitId+"</td>"+
+                                            "<td name='permission-name'>"+
+                                            data.query_data[i].permitName+"</td>";
+                                    tbody.append("<tr></tr>");
+                                    tbody.children('tr').last().append(td);
+                                }
+                            }
+                        }
+                    })
+                }
+            },
+            AddEditKnowledgeClassify:function () {
+                let knowledgeCategory = $('#knowledge-category').val();
+                let classifyName = $('#classify-name').val();
+                if(knowledgeCategory.length === 0){
+                    $('#knowledge-category').next().removeClass('hide');
+                    return;
+                }else if (classifyName.length === 0){
+                    // 展示隐藏错误信息
+                    $('#knowledge-category').next().addClass('hide');
+                    $('#classify-name').next().removeClass('hide');
+                    return;
+                } else{
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    // 不同请求封装不同数据
+                    if (this.url == '/add/'){
+                        data = {'handle':handle, 'knowledgeCategory': knowledgeCategory,'classifyName':classifyName}
+                    }else if (this.url == '/edit/'){
+                        // 获取原内容
+                        let name = $('.home-classify').find('.active').attr('name');
+                        let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                        let rawClassifyName = checked.parent().next().children().text();
+                        let rawCategory = checked.parent().next().children().attr('category');
+                        data = {'handle':handle, 'rawClassifyName': rawClassifyName, 'rawCategory': rawCategory,
+                                'knowledgeCategory': knowledgeCategory,'classifyName':classifyName}
+                    }
+                    $.ajax({
+                        url: this.url,
+                        method: 'post',
+                        dataType: 'json',
+                        data: data,
+                        success: function (data) {
+                            if(data.status === true){
+                                $.hideAddPanel();
+                            }
+                        }
+                    })
+                }
+            },
+        };
+
+        // 查询动态生成导航分类数据
+        function NavClassify(self) {
+            let handle = $(self).attr('handle');
+            $.ajax({
+                url:/query/,
+                method: 'post',
+                dataType: 'json',
+                data: {'handle': handle},
+                success: function (data) {
+                    if(data.status === true){
+                        if (handle == 'panel-user'){
+                            // 生成用户列表
+                            let tbody = $('.user-manage tbody');
+                            tbody.empty();
+                            for(let i=0;i<data.query_data.length;i++) {
+                                let td = "<td style='width: 5%'><input type='checkbox'/></td>" +
+                                    "<td style='width: 5%'>" + (i + 1) + "</td>" +
+                                    "<td name='uid' hidden>" + data.query_data[i].uid + "</td>" +
+                                    "<td name='username'>" + data.query_data[i].username + "</td>" +
+                                    "<td name='show_name'>" + data.query_data[i].show_name + "</td>" +
+                                    "<td name='password' hidden>" + data.query_data[i].password + "</td>" +
+                                    "<td name='phone_number'>" + data.query_data[i].phone_number + "</td>" +
+                                    "<td name='email'>" + data.query_data[i].email + "</td>" +
+                                    "<td name='dept-name' deptid='"+data.query_data[i].groups__id+"'>" +
+                                     data.query_data[i].groups__dept_name + "</td>"+
+                                    "<td name='permissions' permissionsID='"+data.query_data[i].permissionsID+"'>" +
+                                     data.query_data[i].permissions + "</td>";
+                                tbody.append("<tr></tr>");
+                                tbody.children('tr').last().append(td);
+                            }
+                        } else if (handle == 'panel-department'){
+                            // 生成部门树
+                            $('#dept-tree').empty().createdTree(data.query_data);
+                            $.fn.unfoldFold();
+                        } else if (handle == 'panel-dept-level'){
+                            // 生成部门列表
+                            let tbody = $('.dept-level-manage tbody');
+                            // 每次清空在添加内容
+                            tbody.empty();
+                            for(let i=0;i<data.query_data.length;i++){
+                                let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                        "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                        "<td name='id' hidden>"+data.query_data[i].level_id+"</td>"+
+                                        "<td name='department-level' supid='"+data.query_data[i].superior_correlate_id+"'>"+
+                                        data.query_data[i].department_level+"</td>";
+                                tbody.append("<tr></tr>");
+                                tbody.children('tr').last().append(td);
+                            }
+                        } else if (handle == 'panel-permission'){
+                            // 生成权限列表
+                            let tbody = $('.permission-manage tbody');
+                            tbody.empty();
+                            for(let i=0;i<data.query_data.length;i++){
+                                    let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                            "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                            "<td name='id' hidden>"+data.query_data[i].permitId+"</td>"+
+                                            "<td name='permission-name'>"+
+                                            data.query_data[i].permitName+"</td>";
+                                tbody.append("<tr></tr>");
+                                tbody.children('tr').last().append(td);
+                            }
+
+                        } else if (handle == 'panel-knowledge') {
+                            $('#knowledge-tree').empty();
+                            if ($('#knowledge-tree').children().length === 0) {
+                                $('#knowledge-tree').append('<ul class="root-node"></ul>')
+                            }
+                            for (let i=0;i<data.query_data.length;i++){
+                                let elem =
+                                        '<li>' +
+                                        '   <span>' +
+                                        '       <span class="node-icon"><i class="fa fa-plus-square fa-fw"></i></span>' +
+                                       // '       <span class="node-choice"><input type="checkbox"></span>' +
+                                        '       <span class="node-name folder-closed">' +
+                                        '           <a href="javascript:void(0)" category="'+data.query_data[i].category+'">'+
+                                                    data.query_data[i].category+'</a></span>' +
+                                        '   </span>' +
+                                        '   <ul class="sub-node" style="display:none;"></ul>'+
+                                        '</li>' ;
+                                // 判断是否有子节点
+                                if (data.query_data[i].nodes && data.query_data[i].nodes.length > 0){
+                                    $('#knowledge-tree').children().append(elem);
+                                    for (let j=0;j<data.query_data[i].nodes.length;j++){
+                                        let lastElem =
+                                            '<li style="padding-left: 24px">' +
+                                            '   <span>' +
+                                            '       <span class="node-icon "><i class="fa fa-plus-square fa-fw hide"></i></span>' +
+                                            '       <span class="node-choice"><input type="checkbox"></span>' +
+                                            '       <span class="node-name last-node">' +
+                                            '           <a href="javascript:void(0)" category="'+data.query_data[i].category+'">'+
+                                                        data.query_data[i].nodes[j].classify_name+'</a></span>' +
+                                            '   </span>' +
+                                            '</li>' ;
+                                        let subNode = $('#knowledge-tree').find('[category="'+data.query_data[i].nodes[j].category+'"]').parent().parent().next()
+                                        subNode.append(lastElem);
+                                    }
+                                }
+
+                            }
+                            $.fn.unfoldFold();  // 展开折叠事件
+                        }
+                    }
+                }
+            })
+        };
+        function AddDepartment() {
+            obj = new BtnMethod('/add/');
+            obj.AddEditDepartment();
+        }
+        function EditDepartment() {
+            obj = new BtnMethod('/edit/');
+            obj.AddEditDepartment();
+        }
+        function OptionChange(self) {
+            let currentOption = $(self).find("option:selected").attr('supcorrelateid');
+            if (currentOption === 'null' || currentOption === null){
+                $('#superior-group').addClass('hide');
+                return;
+            } else {
+                $('#superior-group').removeClass('hide');
+                data = {'deptLevel': currentOption}
+                $.ajax({
+                    url: '/query_dept_level/',
+                    method: 'post',
+                    dataType: 'json',
+                    data: data,
+                    success: function (data) {
+                        if (data.status == true){
+                            let sel = $('#superior-department');
+                            let firstEle = sel.children().first();
+                            // 先清空在添加空白行
+                            sel.empty().append(firstEle);
+                            for (let i=0;i<data.query_data.length;i++){
+                                let option = "<option value="+data.query_data[i].id+">"
+                                            + data.query_data[i].dept_name+"</option>";
+                                sel.append(option)
+                            }
+                        }
+                    }
+                })
+            }
+        }
+        function AddDeptLevel() {
+            obj = new BtnMethod('/add/');
+            obj.AddEditDeptLevel();
+        }
+        function EditDeptLevel() {
+            obj = new BtnMethod('/edit/');
+            obj.AddEditDeptLevel();
+        }
+        function AddPermission() {
+            obj = new BtnMethod('/add/');
+            obj.AddEditPermission();
+        }
+        function EditPermission() {
+            obj = new BtnMethod('/edit/');
+            obj.AddEditPermission();
+        }
+        function AddUser(){
+            obj = new BtnMethod('/add/');
+            obj.AddEditUser();
+        }
+        function EditUser(){
+            obj = new BtnMethod('/edit/');
+            obj.AddEditUser();
+        }
+        function AddKnowledgeClassify(){
+            obj = new BtnMethod('/add/');
+            obj.AddEditKnowledgeClassify();
+        }
+        function EditKnowledgeClassify(){
+            obj = new BtnMethod('/edit/');
+            obj.AddEditKnowledgeClassify();
+        }
+        // 加载完html后默认显示人员管理的数据
+        NavClassify("[handle=panel-user]");
+    </script>
+{% endblock %}

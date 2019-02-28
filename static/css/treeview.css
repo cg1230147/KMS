@@ -1,0 +1,38 @@
+.tree-form{
+    margin-left: -14px;
+    margin-top: 5px;
+}
+.tree-form ul{
+    margin: 0;
+    padding-left: 18px;
+    list-style: none;
+}
+.tree-form a{
+    color: #1f2f47;
+}
+.tree-form{
+    font-size: 15px;
+}
+.tree-form .node-icon{
+    cursor: pointer;
+    position: relative;
+    top: -1px;
+    left: 6px;
+}
+.tree-form .node-choice{
+    position: relative;
+    left: 2px;
+}
+.tree-form .node-name{
+    padding: 1px 0 1px 17px;
+}
+.tree-form .folder-closed {
+    background: url(/static/img/treeimg/folder-closed.gif) 0 22% no-repeat;
+    /*background-size: 23%,23%;*/
+}
+.tree-form .folder-open{
+    background: url(/static/img/treeimg/folder.gif) 0 22% no-repeat;
+}
+.tree-form .last-node {
+    background: url(/static/img/treeimg/file.gif) 0 22% no-repeat;
+}

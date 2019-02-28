@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>内容发布</title>
+    <link href="/static/plugins/bootstrap-3.3.7-dist/css/bootstrap.css" type="text/css" rel="stylesheet">
+    <link href="/static/plugins/font-awesome-4.7.0/css/font-awesome.css" type="text/css" rel="stylesheet">
+    <link href="/static/plugins/bootstrap-fileinput-master/css/fileinput.min.css" type="text/css" rel="stylesheet">
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .hide{
+            display: none;
+        }
+        .release-pages {
+            width: 80%;
+            height: 100%;
+            margin: 0 auto;
+            font-size: 14px;
+        }
+        .release-pages table input{
+            width: 100%;
+            height: 40px;
+            border: none;
+            {#border-bottom: dashed 1px #8d0000;#}
+            {#font-size: 16px;#}
+            padding-left: 5px;
+        }
+        .release-pages table tr{
+            height: 40px;
+        }
+        .release-pages table td{
+            {#border: 1px solid #4777FF;#}
+            border: 1px solid #DDDDDD;
+        }
+        .release-pages .td-name{
+            color: #3562a5;
+        }
+        .release-pages table .td-name{
+            padding-left: 10px;
+        }
+        {# 调整日期控件上下小箭头位置 #}
+        .release-pages table .date::-webkit-inner-spin-button{
+            margin-top: 4px;
+            padding: 4px 0 4px 0;
+        }
+        .release-pages .btn-group button{
+            width: 100px;
+            height: 40px;
+            margin-left: 20px;
+            background-color: #306DA7;
+            color: white;
+        }
+
+        .release-pages .remark{
+            width: 100%;
+            height: 60px;
+            border: none;
+            resize: none;
+            display: flex;
+            padding-left: 8px;
+            padding-top: 5px;
+        }
+        .release-pages select{
+            width: 100%;
+            height: 41px;
+            border: none;
+            display: flex;
+        }
+
+        .release-pages ul li{
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .release-pages .drop-down-classify{
+            height: 40px;
+            line-height: 40px;
+            padding-left: 5px;
+            cursor: pointer;
+            background: url("/static/img/xia.png") no-repeat 98% / 10px 18px;
+        }
+        .release-pages .drop-down-list{
+            display: none;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+        .release-pages .level-one-menu{
+            background-color: #f7f7f7;
+            width: 100%;
+            height: 100%;
+            line-height: 40px;
+            padding-left: 5px;
+            cursor: pointer;
+            {#border-bottom: #cbcbcb 1px solid;#}
+            border: rgba(203, 203, 203, 0.5) 1px solid;
+            {#box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5)#}
+        }
+        .release-pages .level-two-menu{
+            position: absolute;
+            left: 100%;
+            top: 0;
+            width: 100%;
+            cursor: pointer;
+            line-height: 100%;
+            display: none;
+            border: #cbcbcb 1px solid;
+            {#box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5)#}
+        }
+        .release-pages .level-two-menu li{
+            background-color: #F7F7F7;
+            height: 100%;
+            line-height: 40px;
+            padding-left: 5px;
+            border-bottom: #cbcbcb 1px solid;
+        }
+        .release-pages .level-one-menu:hover{
+            background-color: #DDDDDD;
+        }
+        .release-pages .level-two-menu li:hover{
+            background-color: #DDDDDD;
+        }
+        .release-pages .drop-down-menu{
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-caption-name{
+            height: 21px !important;
+        }
+
+        input[required]:invalid, input:focus:invalid, textarea[required]:invalid, textarea:focus:invalid,select[required]:invalid, select:focus:invalid{
+            <!-- 去掉 ie firefox等浏览器中 required 边框 -->
+            box-shadow: none;
+            border: none;
+            outline:none;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="release-pages" >
+        {% csrf_token %}
+        <div class="page-header" style="text-align: center;">
+            <h1>知识发布</h1>
+        </div>
+        <div class="page-body">
+            <form id="release_form">
+                <table width="100%" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td class="td-name">标题</td>
+                        <td colspan="5">
+                            <input readonly type="text" id="title" name="title"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td-name" style="width: 10%">分类</td>
+                        <td style="width: 24%;position: relative">
+                            <input readonly type="text" name="classify" id="classify" class="drop-down-classify"/>
+                        </td>
+                        <td class="td-name" style="width: 10%">发布人</td>
+                        <td style="width: 23%">
+                            <input readonly type="text" name="issuer" value="{{ show_name }}"/>
+                        </td>
+                        <td class="td-name" style="width: 10%">发布日期</td>
+                        <td style="width: 23%">
+                            <input readonly class="date" name="release_date" type="date" value="{{ current_time }}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td-name" style="width: 10%">发布部门</td>
+                        <td style="width: 23%">
+                            <input readonly type="text" name="issuer_dept" value="{{ dept_name }}"/>
+                        </td>
+                        <td class="td-name" style="width: 10%">审核人</td>
+                        <td style="width: 24%">
+                            <input name="auditor">
+                        </td>
+                        <td class="td-name" style="width: 10%">发布类型</td>
+                        <td>
+                            <input readonly id="type-select" name="type">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td-name">备注</td>
+                        <td colspan="6">
+                            <textarea readonly class="remark" name="remarks"></textarea>
+                        </td>
+                    </tr>
+                    <tr class="describe hide">
+                        <td class="td-name">问题描述</td>
+                        <td colspan="5">
+                            <div id="edit-toolbar-describe"></div>
+                            <div id="edit-textare-describe" style="height: 150px;border-top: 1px solid #DDDDDD"></div>
+                        </td>
+                    </tr>
+                    <tr class="solution hide">
+                        <td class="td-name">解决方案</td>
+                        <td colspan="5">
+                            <div id="edit-toolbar-solution"></div>
+                            <div id="edit-textare-solution" style="height: 300px;border-top: 1px solid #DDDDDD"></div>
+                        </td>
+                    </tr>
+                    <tr class="details">
+                        <td class="td-name">详细信息</td>
+                        <td colspan="5">
+                            <div id="edit-toolbar-details"></div>
+                            <div id="edit-textare-details" style="height: 300px;border-top: 1px solid #DDDDDD"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td-name">上传附件</td>
+                        <td colspan="6">
+                            <input id="upload-file" type="file" class="file-loading" name="attachment"  multiple style="padding-top: 7px"/>
+                        </td>
+                    </tr>
+                </table>
+                <div class="btn-group" style="margin-left: 35%;padding:20px 0 50px 0">
+                    <button class="btn btn-default" type="submit">提交</button>
+                    <button class="btn btn-default">保存</button>
+                    <button class="btn btn-default">删除</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <div>
+        <input type="text" name="doc_uuid" value="{{ doc_uuid }}" hidden>
+    </div>
+    <script src="/static/plugins/js/jquery-3.3.1.js"></script>
+    <script src="/static/plugins/js/wangEditor.js"></script>
+    <script src="/static/plugins/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+    <script src="/static/plugins/js/jquery.cookie.js"></script>
+    <script src="/static/plugins/bootstrap-fileinput-master/js/fileinput.js"></script>
+    <script src="/static/plugins/bootstrap-fileinput-master/js/locales/zh.js"></script>
+    <script>
+        history.pushState(null, null, window.location.href.split("?")[0]);
+
+        // 重置url地址
+        var url = window.location.href + '?doc_uuid='+$('[name=doc_uuid]').val()+'';
+        history.pushState(null, null, url);
+
+        // 禁用浏览器回退操作
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function () {
+            history.pushState(null, null, document.URL);
+        });
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
+        });
+
+        $(function () {
+            // =============================分类下拉菜单控制============================
+            // 点击展开一级菜单
+            $('.drop-down-classify' ).click(function(){
+                    // 避免与 $(document).click 点击事件冲突
+                    event.stopPropagation();
+                    $('.drop-down-list').slideDown(200);
+                }
+            );
+            // 阻止分类下拉菜单，点击空白区隐藏事件的传播
+            $('.drop-down-list').click(function () {
+                 event.stopPropagation()
+            });
+            // 分类菜单悬浮事件
+            $('.drop-down-list').hover(function () {
+                    $(this).slideDown(200);
+                },function () {
+                    $(this).slideUp(200);
+                    $('.level-two-menu').slideUp(200)
+            });
+            // 点击空白区隐藏分类下拉菜单
+            $(document).click(function () {
+                 $('.drop-down-list').slideUp(200)
+            });
+            // 展示二级菜单
+            $('.level-one-menu').click(function(){
+                    $('.level-two-menu').hide();
+                    $(this).next('.level-two-menu').slideDown(200);
+            });
+            // =============================== end =====================================
+
+            // 选择分类
+            $('.drop-down-list .menu-content').click(function () {
+                let classifyName = $(this).text();
+                let category = $(this).parent().prev().text();
+                $('.drop-down-classify').val(category+'/'+classifyName);
+                let classifyEle = document.getElementById('classify');
+                classifyEle.setCustomValidity("");  // 赋值完后取消自定义验证，否则一直返回false
+            });
+            // 修改审核选项，选择后在ie edge等浏览器下验证不通过的问题
+            $('#type-select').change(function () {
+                // id=type-select 元素改变后取消自定义验证，否则ie edge浏览器无效
+                $(this)[0].setCustomValidity("")
+            });
+
+            // bootstarp fileinput 插件
+            var aryFiles = Array();
+            $('#upload-file').fileinput({
+                language: 'zh',     // 设置语言，需要引入locales/zh.js文件
+                uploadUrl: '/att_upload/',     // 上传路径
+                maxFileSize: 0,     // 上传文件大小限制，触发 msgSizeTooLarge 提示
+                // {name}：将被上传的文件名替换，{size}：将被上传的文件大小替换，{maxSize}：将被maxFileSize参数替换。
+                msgSizeTooLarge: '"{name}" ({size} KB) 超过允许的最大上传大小 {maxSize} KB。请重新上传!',
+                showPreview: true,  // 展示预览
+                showUpload: true,   // 是否显示上传按钮
+                showCaption: true,  // 是否显示文字描述
+                showClose: false,   // 隐藏右上角×
+                uploadAsync: true, // 是否异步上传
+                initialPreviewShowDelete: true, // 预览中的删除按钮
+                autoReplace: true,  // 达到最大上传数时，自动替换之前的附件
+                enctype: 'multipart/form-data',
+                uploadExtraData: function () {  // uploadExtraData携带附加参数，上传时携带csrftoken
+                    return {csrfmiddlewaretoken: $.cookie('csrftoken'), doc_uuid: $('[name=doc_uuid]').val()}
+                },
+                initialPreview :[],
+                initialPreviewConfig: [],
+            }).on("fileuploaded", function (e,data,previewId,index) {
+                // 上传成功后触发的事件
+            }).on("fileclear", function (e) {
+                // 移除按钮触发的事件
+                let doc_uuid = $('[name=doc_uuid]').val();
+                $.ajax({
+                    url: '/del_all_att/',
+                    method: 'post',
+                    dataType: 'json',
+                    data: {'doc_uuid': doc_uuid, 'aryFiles': JSON.stringify(aryFiles)},
+                    success: function (data) {
+
+                    }
+                })
+            }).on("filepredelete", function (e, key, jqXHR, data) {
+                // 预览中删除按钮，删除上传的文件触发的事件
+            }).on("fileloaded", function (e, file, previewId) {
+                // aryFile.length = 0;
+                // 加载预览后触发的事件，将所有文件名添加到全局变量 aryFiles 数组中
+                aryFiles.push(file.name);
+            })
+        });
+        // 类型切换
+        function TypeChange(self){
+            let currentOption = $(self).find("option:selected");
+            let currentOptionVal = currentOption.val();
+            let currentOptionText = currentOption.text();
+            if (currentOptionVal === '1'){
+                $('.release-pages .page-header').children().text(currentOptionText);
+                $('.release-pages .details').removeClass('hide');
+                $('.release-pages .describe, .solution').addClass('hide');
+            } else if (currentOptionVal === '2'){
+                $('.release-pages .page-header').children().text(currentOptionText);
+                $('.release-pages .details').addClass('hide');
+                $('.release-pages .describe, .solution').removeClass('hide');
+            }
+        }
+
+        // ============================= wangEditor 富文本控件=============================
+        var E = window.wangEditor;
+        var describe = new E("#edit-toolbar-describe", "#edit-textare-describe");   // 问题描述
+        var solution = new E("#edit-toolbar-solution", "#edit-textare-solution");   // 解决方案
+        var details = new E("#edit-toolbar-details", "#edit-textare-details");      // 详细信息
+
+        describe.customConfig.uploadImgServer = '/media_upload/';     // 上传地址
+        describe.customConfig.uploadFileName = 'file';          // 自定义filename
+        describe.customConfig.showLinkImg = false;              // 隐藏网络图片功能
+        describe.customConfig.uploadImgHeaders = {'X-CSRFToken':$.cookie('csrftoken')}; // 设置传输时携带token
+        describe.customConfig.uploadImgParams = { doc_uuid : $('[name=doc_uuid]').val()};
+        describe.customConfig.uploadImgHooks = {
+            customInsert: function (insertImg,result,editor) {
+                let url = result.url;
+                insertImg(url)
+            }
+        };
+
+        solution.customConfig.uploadImgServer = '/media_upload/';
+        solution.customConfig.uploadFileName = 'file';
+        solution.customConfig.showLinkImg = false;
+        solution.customConfig.uploadImgHeaders = {'X-CSRFToken':$.cookie('csrftoken')};
+        solution.customConfig.uploadImgParams = { doc_uuid : $('[name=doc_uuid]').val()};
+        solution.customConfig.uploadImgHooks = {
+            customInsert: function (insertImg,result,editor) {
+                let url = result.url;
+                insertImg(url)
+            }
+        };
+
+        details.customConfig.uploadImgServer = '/media_upload/';
+        details.customConfig.uploadFileName = 'file';
+        details.customConfig.showLinkImg = false;
+        details.customConfig.uploadImgHeaders = {'X-CSRFToken':$.cookie('csrftoken')};
+        details.customConfig.uploadImgParams = { doc_uuid : $('[name=doc_uuid]').val()};
+        details.customConfig.uploadImgHooks = {
+            customInsert: function (insertImg,result,editor) {
+                let url = result.url;
+                insertImg(url)
+            }
+        };
+
+        describe.customConfig.zIndex = 0;
+        solution.customConfig.zIndex = 0;
+        details.customConfig.zIndex = 0;
+        describe.create();
+        solution.create();
+        details.create();
+
+        var MutationObserver = MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+        // 监听的DOM节点
+        // var target = document.querySelector('.w-e-text p');
+        var target = document.getElementsByClassName("w-e-text");
+        // 创建观察者对象
+        var observer = new MutationObserver(function (mutations) { //观察对象的回调函数
+            // 遍历所有MutationRecords
+            mutations.forEach(function (mutation) {
+                // removedNodes[0] 删除节点后记录的数组，mutation.removedNodes[0].tagName删除的节点名称
+                if(mutation.removedNodes[0] != null && mutation.removedNodes[0].tagName === 'IMG'){
+                    // 获取img节点的src属性，并用 / 进行分割
+                    var imgSrc = decodeURI(mutation.removedNodes[0].src);
+                    var fileName = imgSrc.split('/').pop();
+                    // 用ajax发送删除的图片名称
+                    $.ajax({
+                        url: '/del_doc_file/',
+                        method: 'POST',
+                        {#headers: {'Sending-Method': 'MutationObserver'},#}
+                        dataType: 'json',
+                        data: {'fileName': fileName, 'doc_uuid': $('[name=doc_uuid]').val()},
+                        success: function (msg) {
+                            console.log(msg)
+                        }
+                    })
+                }
+            })
+        });
+		// 监听的变动类型
+        var config = { attributes: true, childList: true, characterData: true ,subtree:true};
+        observer.observe(target[0].firstChild, config);
+        observer.observe(target[1].firstChild, config);
+        observer.observe(target[2].firstChild, config);
+        // ============================= wangEditor end =============================
+
+
+        /*
+        var releaseForm = document.getElementById('release_form');
+        releaseForm.addEventListener('submit', function () {
+            console.log(details.text().html());
+        });*/
+        $(function () {
+            $('#release_form').submit(function (e) {
+                e.preventDefault();     // 阻止提交刷新
+                let uuid = $('[name=doc_uuid]').val();
+                let title = $('[name=title]').val();
+                let classify = $('[name=classify]').val();
+                let issuer = $('[name=issuer]').val();
+                let releaseDate = $('[name=release_date]').val();
+                let issuerDept = $('[name=issuer_dept]').val();
+                let auditor = $('[name=auditor]').val();
+                let issueType = $('[name=type] option:selected').text();
+                let remarks = $('[name=remarks]').val();
+                let details1 = details.txt.text() ? details.txt.html() : null;
+                let describe1 = describe.txt.text() ? describe.txt.html() : null;
+                let solution1 = solution.txt.text() ? solution.txt.html() : null;
+
+                let aryAtt = $('.kv-zoom-cache .kv-file-download');
+                var aryUrl = Array();
+                if (aryAtt){
+                    for (let i=0;i<aryAtt.length;i++){
+                        if (aryUrl.indexOf(aryAtt[i] === -1)){
+                            let href = $(aryAtt[i]).attr('href');
+                            aryUrl.push(href);
+                        }
+                    }
+                }
+                var data = {'uuid':uuid, 'title':title, 'classify':classify, 'issuer':issuer, 'releaseDate':releaseDate,
+                    'auditor':auditor, 'issueType':issueType,'issuerDept':issuerDept,'remarks':remarks, 'details1':details1,
+                    'describe1': describe1, 'solution1':solution1, 'aryUrl':JSON.stringify(aryUrl)};
+                console.log(data);
+                $.ajax({
+                    url: '/save_doc/',
+                    method: 'post',
+                    dataType: 'json',
+                    data: data,
+                    success: function (data) {
+                        if (data.status){
+                            //window.close();
+                        }
+                    }
+                })
+            })
+        })
+    </script>
+</body>
+</html>

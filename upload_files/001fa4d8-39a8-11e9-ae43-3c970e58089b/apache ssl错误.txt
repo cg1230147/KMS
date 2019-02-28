@@ -1,0 +1,4 @@
+由于ssl导致的问题,需要禁用SSL
+找到httpd.conf文件(/Applications/XAMPP/xamppfiles/etc)
+搜索这句LoadModule ssl_module modules/mod_ssl.so
+注释掉这句,重启服务,问题解决
