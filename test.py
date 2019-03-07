@@ -35,14 +35,21 @@ n = [{'category': '华能移动办公', 'nodes': [
 import os
 # print(os.path.dirname(__file__))
 # print(os.path.abspath(__file__))
-# print(os.path.join(os.path.dirname(__file__),'upload_files'))
+pp = '/upload_files/001fa4d8-39a8-11e9-ae43-3c970e58089b/2._华能集团新建二级单位邮件地址簿系统部署步骤（v1.0）.docx'
+path = os.path.dirname(__file__)
+# print(path,pp)
+# print(os.path.join(path,pp))
 # os.mkdir(os.path.join(os.path.join(os.path.dirname(__file__),'upload_files'), 'dirname'))
 
 import uuid
-print(uuid.NAMESPACE_DNS)
+# print(uuid.NAMESPACE_DNS)
 import re
 # res = re.search(r'[^.\\/\w]+$', '1_完整版_软件项目开发计划书.doc')
 # res = re.search(r'[^.\\/:*?"<>|\r\n]+$', '1_完整版_软件项目开发计划书.pdf')
-res = re.search(r'[^\\.]+$', '.txt1_完整版_软件.doc项目开发计划书.xslx')
+res = re.sub(r'^/','', pp,1)
 
 print(res)
+
+import shutil
+
+shutil.rmtree('F:\新建文件夹')

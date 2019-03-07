@@ -8,17 +8,17 @@
     <link href="/static/css/treeview.css" rel="stylesheet" type="text/css">
     <link href="/static/plugins/css/bootstrap-select.min.css" rel="stylesheet" type="text/css">
     <style>
-        #panel-user .footer-btn, #panel-dept-level .footer-btn, #panel-department .footer-btn, #panel-permission .footer-btn, #knowledge .footer-btn, #panel-knowledge .footer-btn{
+        #panel-user .footer-btn, #panel-dept-level .footer-btn, #panel-department .footer-btn, #panel-permission .footer-btn, #knowledge .footer-btn, #panel-knowledge .footer-btn, #panel-homepage .footer-btn{
             text-align: center;
             border: transparent;
         }
-        #panel-user, #panel-dept-level, #panel-department, #panel-permission, #panel-knowledge{
+        #panel-user, #panel-dept-level, #panel-department, #panel-permission, #panel-knowledge, #panel-homepage{
             position: absolute;
             top: -23px;
             left: 16%;
             z-index: 12;
         }
-        #panel-user .form-group, #panel-dept-level .form-group, #panel-department .form-group, #panel-permission .form-group, #knowledge.form-group, #panel-knowledge .form-group{
+        #panel-user .form-group, #panel-dept-level .form-group, #panel-department .form-group, #panel-permission .form-group, #knowledge.form-group, #panel-knowledge .form-group, #panel-homepage .form-group{
             margin-bottom: 5px;
         }
 
@@ -63,12 +63,12 @@
 {% block page_body_left_classify %}
     <div class="home-classify">
         <ul>
-            <li class="list-group-item active" name="user-manage" handle="panel-user" onclick="NavClassify(this);">人员管理</li>
-            <li class="list-group-item" name="department-manage" handle="panel-department" onclick="NavClassify(this);">部门管理</li>
-            <li class="list-group-item" name="dept-level-manage" handle="panel-dept-level" onclick="NavClassify(this);">部门级别</li>
-            <li class="list-group-item" name="permission-manage" handle="panel-permission" onclick="NavClassify(this);">权限管理</li>
-            <li class="list-group-item" name="knowledge-manage" handle="panel-knowledge" onclick="NavClassify(this);">知识分类</li>
-            <li class="list-group-item" name="homepage-manage" handle="panel-homepage" onclick="NavClassify(this);">首页管理</li>
+            <li class="list-group-item active" name="user-manage" handle="panel-user" onclick="GetNavClassifyData(this);">人员管理</li>
+            <li class="list-group-item" name="department-manage" handle="panel-department" onclick="GetNavClassifyData(this);">部门管理</li>
+            <li class="list-group-item" name="dept-level-manage" handle="panel-dept-level" onclick="GetNavClassifyData(this);">部门级别</li>
+            <li class="list-group-item" name="permission-manage" handle="panel-permission" onclick="GetNavClassifyData(this);">权限管理</li>
+            <li class="list-group-item" name="knowledge-manage" handle="panel-knowledge" onclick="GetNavClassifyData(this);">知识分类</li>
+            <li class="list-group-item" name="homepage-manage" handle="panel-homepage" onclick="GetNavClassifyData(this);">首页管理</li>
         </ul>
     </div>
 {% endblock %}
@@ -79,7 +79,7 @@
 {% endblock %}
 
 {% block page_body_right_content %}
-    <div class="manage-content" style="margin-left:5px;border-top: 1px solid #ddd;">
+    <div class="manage-content" style="margin-left:5px;border-top: 1px solid #ddd;overflow-y: scroll">
         <div class="user-manage">
             <table>
                 <thead>
@@ -126,6 +126,20 @@
         </div>
         <div class="knowledge-manage hide">
             <div id="knowledge-tree" class="tree-form"></div>
+        </div>
+        <div class="homepage-manage hide">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%"></th>
+                        <th style="width: 5%">序号</th>
+                        <th>导航名称</th>
+                        <th>查看权限</th>
+                        <th>过滤条件</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 {% endblock %}
@@ -176,6 +190,8 @@
                         $('#' + handle + ' .modal-footer > button').text("添加").attr('onclick', 'AddPermission();');
                     } else if (handle == 'panel-knowledge'){
                         $('#' + handle + ' .modal-footer > button').text("添加").attr('onclick', 'AddKnowledgeClassify();');
+                    } else if (handle == 'panel-homepage'){
+                        $('#' + handle + ' .modal-footer > button').text("添加").attr('onclick', 'AddHomepageSettings();');
                     }
                 },
                 getDeptList:function () {
@@ -201,7 +217,7 @@
                     });
                     return true;
                 },
-                getPermission:function () {
+                getPermission:function (elemId) {
                     // 新增或编辑人员时查询所有的权限列表
                     $.ajax({
                         url: '/query/',
@@ -211,8 +227,8 @@
                         data: {'handle': 'panel-permission'},
                         success: function (data) {
                             if (data.status == true){
-                                let sel = $('#reg-permission');
-                                sel.empty();
+                                let sel = $(elemId);
+                                sel.empty().append('<option value=""></option>');
                                 for (let i=0;i<data.query_data.length;i++){
                                     let option = "<option value="+data.query_data[i].permitId+">"
                                                 + data.query_data[i].permitName+"</option>";
@@ -275,7 +291,9 @@
                     }
                 }else if (handle === 'panel-user'){
                     $.getDeptList();    // 查询所有部门
-                    $.getPermission();  // 查询所有权限
+                    $.getPermission('#reg-permission');     // 查询所有权限
+                }else if (handle === 'panel-homepage'){
+                    $.getPermission('#view-permissions');   // 查询所有权限
                 }
             });
             // 编辑
@@ -293,7 +311,7 @@
                      let handle = $('.home-classify').find('.active').attr('handle');
 
                      if (handle == 'panel-user'){
-                        if ($.getDeptList() == true && $.getPermission() == true){
+                        if ($.getDeptList() == true && $.getPermission('#reg-permission') == true){
                             let parent = checked.parent();
                             // 获取原数据
                             let username = parent.nextAll('[name=username]').text();
@@ -309,7 +327,9 @@
                             $('#email').val(email);
                             $('#phone-number').val(phone_number);
                             $('#reg-department').val(deptID);
-                            $('#reg-permission').selectpicker('val',permissionID.split(','));
+                            $('#reg-permission').selectpicker('val',permissionID.split(','),{
+                                noneSelectedText:'',
+                            });
 
                             $('#panel-user .modal-footer > button').text("修改").attr('onclick', 'EditUser();');
                         }
@@ -409,6 +429,16 @@
                          $('#knowledge-category').val(category)
                          $('#classify-name').val(classifyName);
                          $('#panel-knowledge .modal-footer > button').text("修改").attr('onclick', 'EditKnowledgeClassify();');
+                     } else if(handle == 'panel-homepage'){
+                         $.getPermission('#view-permissions');
+                         let navName = checked.parent().nextAll('[name=nav-name]').text();
+                         let viewPermissionsId = checked.parent().nextAll('[name=view-permissions]').attr('viewpermissionsid');
+                         let filterConditions = checked.parent().nextAll('[name=filter-conditions]').text();
+                         console.log(navName,viewPermissionsId,filterConditions)
+                         $('#nav-name').val(navName);
+                         $('#view-permissions').selectpicker('val',viewPermissionsId);
+                         $('#filter-conditions').val(filterConditions)
+                         $('#panel-homepage .modal-footer > button').text("修改").attr('onclick', 'EditHomepageSettings();');
                      }
 
                 }
@@ -479,6 +509,13 @@
                             let elem = checked.parent().next().children();
                             for (let i=0;i<elem.length;i++){
                                 let data = {'classifyName': $(elem[i]).text(), 'knowledgeCategory': $(elem[i]).attr('category')};
+                                dataSet.push(data);
+                            }
+                        } else if (handle == 'panel-homepage') {
+                            let homePageId = checked.parent().nextAll('[name=id]');
+                            let navName = checked.parent().nextAll('[name=nav-name]');
+                            for (let i = 0; i < homePageId.length; i++) {
+                                let data = {'id': $(homePageId[i]).text(), 'navName': $(navName[i]).text()};
                                 dataSet.push(data);
                             }
                         }
@@ -776,10 +813,63 @@
                     })
                 }
             },
+            AddEditHomepageSettings:function () {
+                let navName = $('#nav-name').val();
+                let viewPermissions = $('#view-permissions option:selected').val();
+                let filterConditions = $('#filter-conditions').val();
+                if(navName.length === 0){
+                    $('#nav-name').next().removeClass('hide');
+                    return false;
+                }else if(filterConditions.length === 0){
+                    $('#nav-name').next().addClass('hide');
+                    $('#filter-conditions').next().removeClass('hide');
+                    return false;
+                }else{
+                    let handle = $('.home-classify').find('.active').attr('handle');
+                    // 不同请求封装不同数据
+                    if (this.url == '/add/'){
+                        data = {'handle':handle, 'navName': navName,
+                                'viewPermissions':viewPermissions,'filterConditions':filterConditions}
+                    }else if (this.url == '/edit/'){
+                        // 获取原内容
+                        let name = $('.home-classify').find('.active').attr('name');
+                        let checked = $('.manage-content > .' + name).find('input[type="checkbox"]:checked');
+                        let hpsId = checked.parent().nextAll('[name=id]').text();
+                        let rawNavName = checked.parent().nextAll('[name=nav-name]').text();
+                        let rawContent = checked.parent().nextAll('[name=permission-name]').text();
+                        data = {'handle':handle, 'hpsId': hpsId,'rawNavName':rawNavName, 'navName': navName,
+                                'rawContent':rawContent, 'viewPermissions':viewPermissions,'filterConditions':filterConditions}
+                    }
+                    $.ajax({
+                        url: this.url,
+                        method: 'post',
+                        dataType: 'json',
+                        data: data,
+                        success: function (data) {
+                            if(data.status === true){
+                                $.hideAddPanel();
+                                let tbody = $('.homepage-manage tbody');
+                                tbody.empty();
+                                for(let i=0;i<data.query_data.length;i++){
+                                    let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                            "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                            "<td name='id' hidden>"+data.query_data[i].id+"</td>"+
+                                            "<td name='nav-name'>"+ data.query_data[i].navName+"</td>"+
+                                            "<td name='view-permissions' viewPermissionsId='"+data.query_data[i].viewPermissionsId+"'>"+
+                                            data.query_data[i].viewPermissions+"</td>"+
+                                            "<td name='filter-conditions'>"+ data.query_data[i].filterConditions+"</td>";
+                                    tbody.append("<tr></tr>");
+                                    tbody.children('tr').last().append(td);
+                                }
+                            }
+                        }
+                    })
+                }
+            },
         };
 
         // 查询动态生成导航分类数据
-        function NavClassify(self) {
+        function GetNavClassifyData(self) {
             let handle = $(self).attr('handle');
             $.ajax({
                 url:/query/,
@@ -878,6 +968,21 @@
 
                             }
                             $.fn.unfoldFold();  // 展开折叠事件
+                        } else if (handle == 'panel-homepage') {
+                            // 生成导航列表
+                            let tbody = $('.homepage-manage tbody');
+                            tbody.empty();
+                            for(let i=0;i<data.query_data.length;i++){
+                                let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                        "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                        "<td name='id' hidden>"+data.query_data[i].id+"</td>"+
+                                        "<td name='nav-name'>"+ data.query_data[i].navName+"</td>"+
+                                        "<td name='view-permissions' viewPermissionsId='"+data.query_data[i].viewPermissionsId+"'>"+
+                                        data.query_data[i].viewPermissions+"</td>"+
+                                        "<td name='filter-conditions'>"+ data.query_data[i].filterConditions+"</td>";
+                                tbody.append("<tr></tr>");
+                                tbody.children('tr').last().append(td);
+                            }
                         }
                     }
                 }
@@ -952,7 +1057,15 @@
             obj = new BtnMethod('/edit/');
             obj.AddEditKnowledgeClassify();
         }
+        function AddHomepageSettings(){
+            obj = new BtnMethod('/add/');
+            obj.AddEditHomepageSettings();
+        }
+        function EditHomepageSettings(){
+            obj = new BtnMethod('/edit/');
+            obj.AddEditHomepageSettings();
+        }
         // 加载完html后默认显示人员管理的数据
-        NavClassify("[handle=panel-user]");
+        GetNavClassifyData("[handle=panel-user]");
     </script>
 {% endblock %}

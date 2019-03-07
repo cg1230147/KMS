@@ -24,7 +24,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^$', views.login, name=''),
     re_path(r'login/$', views.login, name='login',),
+    # index
     re_path(r'index/$', views.index, name='index'),
+    re_path(r'query_index_data/$', views.query_index_data, name='query_index_data'),
     re_path(r'logout/$', views.logout, name='logout'),
     re_path(r'classify/', views.classify, name='classify'),
     # release
@@ -33,6 +35,7 @@ urlpatterns = [
     re_path(r'att_upload/', views.attachment_upload, name='att_upload'),
     re_path(r'del_doc_file/', views.del_doc_file, name='del_doc_file'),
     re_path(r'del_all_att/', views.del_all_att, name='del_all_att'),
+    re_path(r'del_doc', views.del_doc, name='del_doc'),
     re_path(r'save_doc/', views.save_doc, name='save_doc'),
     # viewForm
     re_path(r'view_form', views.view_form, name='view_form'),

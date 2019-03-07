@@ -19,14 +19,13 @@
 {% block page_body_left_classify %}
     <div class="home-classify">
         <ul class="list-group">
-            <li class="list-group-item active">全部文档</li>
-            <li class="list-group-item">待提交文档</li>
-            <li class="list-group-item">已提交文档</li>
-            <li class="list-group-item">已发布文档</li>
-            <li class="list-group-item">审核失败</li>
-            <li class="list-group-item">待审核文档</li>
-            <li class="list-group-item">已审核文档</li>
-            <li class="list-group-item">已退回</li>
+            {% for i in homepage_nav %}
+                {% if i.nav_name == '全部文档' %}
+                <li class="list-group-item active" onclick="GetLeftHomepageNavData(this);" id="{{ i.id }}">{{ i.nav_name }}</li>
+                {% else %}
+                <li class="list-group-item" onclick="GetLeftHomepageNavData(this);" id="{{ i.id }}">{{ i.nav_name }}</li>
+                {% endif %}
+            {% endfor %}
         </ul>
     </div>
 {% endblock %}
@@ -36,20 +35,23 @@
 {% endblock %}
 
 {% block page_body_right_content %}
-    <div class="content" style="padding-left:5px;">
+    <div class="content" style="padding-left:5px;width: 100%;height: 88%;overflow-y: scroll">
         <table>
-            <tr>
-                <th style="width: 5%"></th>
-                <th style="width: 35%">标题</th>
-                <th style="width: 10%">发布人</th>
-                <th style="width: 20%">分类</th>
-                <th style="width: 10%">发布部门</th>
-                <th style="width: 10%">审核人</th>
-                <th style="width: 10%">发布日期</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th style="width: 5%"></th>
+                    <th style="width: 35%">标题</th>
+                    <th style="width: 10%">发布人</th>
+                    <th style="width: 20%">分类</th>
+                    <th style="width: 10%">发布部门</th>
+                    <th style="width: 10%">审核人</th>
+                    <th style="width: 10%">发布日期</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
             <tr>
                 <td><input type="checkbox"/></td>
-                <td style="text-align: left;padding-left: 5px"><a href="?doc_uuid=001fa4d8-39a8-11e9-ae43-3c970e58089b">测试20190226</a></td>
+                <td style="text-align: left;padding-left: 5px"><a href="view_form/?doc_uuid=001fa4d8-39a8-11e9-ae43-3c970e58089b" target="view_window">测试20190226</a></td>
                 <td>葛晨光</td>
                 <td>domino 8.0/服务器问题</td>
                 <td>OA项目部</td>
@@ -58,8 +60,95 @@
             </tr>
         </table>
     </div>
+    <div style="height: 6%;width: 100%;padding-left: 5px;">
+        <nav aria-label="Page navigation" style="border-top: 1px solid #dddddd;position: absolute;bottom: -5px">
+            <ul class="pagination" style="margin: 0;"></ul>
+        </nav>
+    </div>
 {% endblock %}
 
 {% block page-footer %}
     <div class="page-footer"></div>
+{% endblock %}
+
+{% block script %}
+    <script src="/static/plugins/js/jquery-3.3.1.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
+        });
+        $(function () {
+            // 左侧导航切换
+            $('.list-group-item').click(function () {
+                $(this).addClass('active').siblings().removeClass('active');
+                let name = $(this).attr('name');
+                $('.' + name).removeClass('hide').siblings().addClass('hide');
+            });
+        });
+        function GetLeftHomepageNavData(self,page) {
+            let navId = $(self).attr('id');
+            let navName = $(self).text();
+            $.ajax({
+                url: '/query_index_data/',
+                method: 'post',
+                dataType: 'json',
+                data:{'navId':navId,'navName':navName,'page':page},
+                success:function (data) {
+                    if (data.status){
+                        let tbody = $('.content table tbody');
+                        tbody.empty();
+                        for (let i=0;i<data.result_list.length;i++){
+                            let td = "<td><input type='checkbox'/></td>"+
+                                    "<td style='text-align: left;padding-left: 5px'><a href='view_form/?doc_uuid="+
+                                    data.result_list[i].uuid+"'target='_blank'>"+data.result_list[i].title+"</a></td>"+
+                                    "<td>"+data.result_list[i].issuer+"</td>"+
+                                    "<td>"+data.result_list[i].classify_name+"</td>"+
+                                    "<td>"+data.result_list[i].issuer_dept+"</td>"+
+                                    "<td>"+data.result_list[i].auditor+"</td>"+
+                                    "<td>"+data.result_list[i].release_date+"</td>";
+                            tbody.append("<tr></tr>");
+                            tbody.children('tr').last().append(td);
+                        }
+                        $('.pagination').empty();
+                        //上一页
+                        if (data.page_dict.has_per_page){
+                            let perPage = '<li><a href="#" aria-label="Previous" onclick="GetPagingData(self,"' +
+                                data.page_dict.per_page_number+'")"><span aria-hidden="true">&laquo;</span></a>' + '</li>';
+                            $('.pagination').append(perPage)
+                        }else{
+                            let perPage = '<li><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>' + '</li>';
+                            $('.pagination').append(perPage)
+                        }
+                        // 页码
+                        for (let i=0;i<data.page_dict.total_page.length;i++){
+                            if (data.page_dict.current_page === data.page_dict.total_page[i]) {
+                                let page = '<li><a href="#" style="background-color: #eeeeee;" onclick="GetPagingData(self,'+
+                                    data.page_dict.total_page[i]+');">'+data.page_dict.total_page[i]+'</a></li>';
+                                $('.pagination').append(page)
+                            }else {
+                                let page = '<li><a href="#" onclick="GetPagingData(self,'+
+                                    data.page_dict.total_page[i]+');">'+data.page_dict.total_page[i]+'</a></li>';
+                                $('.pagination').append(page)
+                            }
+                        }
+
+                        // 下一页
+                        if (data.page_dict.has_next_page){
+                            let nextPage = '<li><a href="#" aria-label="Next" onclick="GetPagingData(self,'+
+                                data.page_dict.next_page_number+')"><span aria-hidden="true">&raquo;</span></a>'+'</li>';
+                            $('.pagination').append(nextPage)
+                        }else {
+                            let nextPage = '<li><a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>'+'</li>';
+                            $('.pagination').append(nextPage)
+                        }
+                    }
+                }
+            })
+        }
+        function GetPagingData(self,page) {
+            let activeNav = $('.list-group').find('.active');
+            GetLeftHomepageNavData(activeNav, page);
+        }
+        GetLeftHomepageNavData($('.list-group').find('.active'))
+    </script>
 {% endblock %}

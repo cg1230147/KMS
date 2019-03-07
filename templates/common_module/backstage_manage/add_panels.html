@@ -43,7 +43,7 @@
                         <span class="error hide">部门不能为空</span>
                     </div>
                     <div class="form-group">
-                        <label for="recipient-name" class="control-label">权限:</label>
+                        <label for="reg-permission" class="control-label">权限:</label>
                         <select title="请选择权限" name="reg-permission" id="reg-permission" class="form-control selectpicker" multiple>
                         </select>
                         <span class="error hide">权限不能为空</span>
@@ -169,4 +169,38 @@
         </div>
       </div>
     </div>
+    <div id="panel-homepage" class="hide" role="dialog" aria-labelledby="exampleModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title">首页管理</h4>
+          </div>
+          <div class="modal-body">
+              <div class="form-group">
+                  <label for="nav-name" class="control-label">导航名称:</label>
+                  <input type="text" name="nav-name" id="nav-name" class="form-control">
+                  <span class="error hide">填写内容不能为空</span>
+              </div>
+              <div class="form-group" >
+                  <label for="view-permissions" class="control-label">查看权限:</label>
+                  <select title="请选择权限" id="view-permissions" name="view-permissions" class="form-control selectpicker">
+                      <option></option>
+                  </select>
+                  <span class="error hide">请选择查看权限</span>
+              </div>
+              <div class="form-group">
+                  <label for="filter_conditions" class="control-label">过滤条件:</label>
+                  <input type="text" name="filter-conditions" id="filter-conditions" class="form-control">
+                  <span class="error hide">填写内容不能为空</span>
+              </div>
+              <div class="modal-footer footer-btn" >
+                  <button type="button" class="btn btn-primary" style="width: 40%" onclick="AddHomepageSettings()">添加</button>
+              </div>
+          </div>
+        </div>
+      </div>
+</div>
 </div>

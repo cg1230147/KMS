@@ -27,12 +27,14 @@ class KmsDocInfo(models.Model):
     auditor = models.CharField(max_length=16, verbose_name='审核人', default=None)
     remarks = models.TextField(null=True,blank=True, verbose_name='备注')
     issue_type = models.CharField(max_length=16, verbose_name='发布类型', default=None)
-    del_status = models.IntegerField(verbose_name='文档状态', default=0)        # 0 未删除，1 删除
-    release_status = models.IntegerField(verbose_name='发布状态', default=0)    # 0 未发布，1 已发布
-    examine_status = models.IntegerField(verbose_name='审核状态', default=0)    # 0 未审核通过，1 审核通过
+    del_status = models.IntegerField(verbose_name='删除状态', default=0)        # 0 未删除，1 删除
+    doc_status = models.CharField(max_length=8, verbose_name='文档状态')        # 暂存、审核、发布、退回
+    # release_status = models.IntegerField(verbose_name='发布状态', default=0)    # 0 未发布，1 发布
+    # examine_status = models.IntegerField(verbose_name='审核状态', default=0)    # 0 未审核通过，1 审核通过
     details = models.TextField(null=True,blank=True,verbose_name='详细内容')
     describe = models.TextField(null=True,blank=True,verbose_name='问题描述')
     solution = models.TextField(null=True,blank=True,verbose_name='解决方案')
+    return_reason = models.CharField(max_length=256, verbose_name='退回原因',null=True,blank=True)
 
     class Meta:
         # indexes = [
@@ -40,13 +42,15 @@ class KmsDocInfo(models.Model):
         # ]
         # 组合索引
         index_together = [
-            ('title','issuer','classify_name')
+            ('title','issuer','classify_name'),
+            ('del_status', 'doc_status')
         ]
 
 class KmsFilePath(models.Model):
     id = models.AutoField(primary_key=True)
     uuid = models.CharField(max_length=64)
-    path = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
+    path = models.CharField(max_length=256)
     doc_info = models.ForeignKey("KmsDocInfo", "id",)
 
 class KmsDepartmentLevel(models.Model):
@@ -72,6 +76,13 @@ class KmsKnowledgeClassify(models.Model):
     id = models.AutoField(primary_key=True)
     category = models.CharField(max_length=16)
     classify_name = models.CharField(max_length=16)
+
+class KmsHomePageSettings(models.Model):
+    id = models.AutoField(primary_key=True)
+    nav_name = models.CharField(max_length=16,verbose_name="导航名称")
+    # view_permissions = models.CharField(max_length=8,blank=True,null=True,verbose_name="查看权限")
+    view_permissions = models.ForeignKey('KmsUserPermissions', 'id', blank=True,null=True,verbose_name="查看权限")
+    filter_conditions = models.CharField(max_length=128,verbose_name="过滤条件")
 
 
 

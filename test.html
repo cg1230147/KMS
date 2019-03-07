@@ -46,9 +46,6 @@
     <div id="test">
 
     </div>
-    <p>ddddd<img src="/upload_files/fb1848c6-366c-11e9-a92c-3c970e58089b/django upload.jpg" style="background-color: transparent; max-width: 100%;"></p>
-
-
 
     <form >
         <input type="text" required oninvalid="setCustomValidity('请输入您的姓名');" oninput="setCustomValidity('');">
@@ -56,17 +53,71 @@
 
         <button type="submit" class="btn btn-default">保存</button>
     </form>
-    <script src="F:/py_code/webFrame/KMS/static/plugins/js/jquery-3.3.1.js"></script>
+    <!--<script src="F:/py_code/webFrame/KMS/static/plugins/js/jquery-3.3.1.js"></script>-->
     <script>
+        //window.open('https://www.baidu.com')
+        //window.location.href='https://www.baidu.com'
 
        // $('#submit').click(function () {
          //  $.ajax({})
        // });
+        /*
+        window.onbeforeunload = function (event) {
+            var e = event || window.event;
+            if (e){
+                e.returnValue = '真的要关闭吗？？？？？';
+            }
+            confirm('dddddddd')
+            return '真的要关闭吗？？？？？';
+        }*/
 
+        window.onbeforeunload = function(event) {
+    return beforunload(event);
+};
+function beforunload(event) {
+    event = event ? event : (window.event ? window.event : null);
+    var myIE = myBrowser();
+    if (myIE=="IE") { // IE
+        var cy = event.clientY || event.target.event.clientY;
+        var ak = event.altKey || event.target.event.altKey;
+        if (cy < 0 || ak) {
+            return "确定要离开本页面吗？";
+        }
+    } else {
+        // Firefox、Chrome
+        var nodeName = event.currentTarget.document.activeElement.nodeName;
+        if (nodeName!="A") {
+            return "确定要离开本页面吗？";
+        }
+    }
+}
+
+function myBrowser() {
+    var userAgent = navigator.userAgent; //取得浏览器的userAgent字符串
+    var isOpera = userAgent.indexOf("Opera") > -1;
+    if (isOpera) { //判断是否Opera浏览器
+        return "Opera"
+    };
+    if (userAgent.indexOf("Firefox") > -1) { //判断是否Firefox浏览器
+        return "FF";
+    };
+    if (userAgent.indexOf("Chrome") > -1){
+        return "Chrome";
+    };
+    if (userAgent.indexOf("Safari") > -1) { //判断是否Safari浏览器
+        return "Safari";
+    };
+    if (userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1 && !isOpera) { //判断是否IE浏览器
+        return "IE";
+    };
+}
+
+
+        /*
         $('#test').append('<div id="curr" onclick="ale();">ddddd</div>');
         function ale() {
             alert('aaaa')
-        }
+        }*/
     </script>
 </body>
 </html>
