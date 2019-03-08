@@ -633,7 +633,7 @@
                         success: function (data) {
                             if (data.status == false){
                                 for (let key in data.message){
-                                    $('[name='+key+']').next().removeClass('hide').text(data.message[key][0].message);
+                                    $('#panel-user').find('[name='+key+']').next().removeClass('hide').text(data.message[key][0].message);
                                 }
                             }else if (data.status == true) {
                                 alert(data.message);
@@ -820,10 +820,12 @@
                 if(navName.length === 0){
                     $('#nav-name').next().removeClass('hide');
                     return false;
+                    /* 禁用强制填写 过滤条件
                 }else if(filterConditions.length === 0){
                     $('#nav-name').next().addClass('hide');
                     $('#filter-conditions').next().removeClass('hide');
                     return false;
+                    */
                 }else{
                     let handle = $('.home-classify').find('.active').attr('handle');
                     // 不同请求封装不同数据

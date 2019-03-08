@@ -21,10 +21,12 @@ class KmsDocInfo(models.Model):
     uuid = models.CharField(max_length=64,default=None,unique=True)
     title = models.CharField(max_length=128, verbose_name='标题', default=None,db_index=True)
     issuer = models.CharField(max_length=8, verbose_name='发布人', default=None, db_index=True)
+    issuer_account = models.CharField(max_length=16, verbose_name='发布人账户', default=None, db_index=True)
     issuer_dept = models.CharField(max_length=16, verbose_name='发布部门', default=None)
     classify_name = models.CharField(max_length=16, verbose_name='知识分类', default=None)
     release_date = models.DateField(auto_now_add=True, verbose_name='发布时间')
     auditor = models.CharField(max_length=16, verbose_name='审核人', default=None)
+    auditor_account = models.CharField(max_length=16, verbose_name='审核人账户', default=None)
     remarks = models.TextField(null=True,blank=True, verbose_name='备注')
     issue_type = models.CharField(max_length=16, verbose_name='发布类型', default=None)
     del_status = models.IntegerField(verbose_name='删除状态', default=0)        # 0 未删除，1 删除
@@ -43,7 +45,7 @@ class KmsDocInfo(models.Model):
         # 组合索引
         index_together = [
             ('title','issuer','classify_name'),
-            ('del_status', 'doc_status')
+            ('del_status', 'doc_status'),
         ]
 
 class KmsFilePath(models.Model):

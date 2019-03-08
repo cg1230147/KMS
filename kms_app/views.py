@@ -76,20 +76,31 @@ def index(request):
 def query_index_data(request):
     nav_id = request.POST.get('navId', None)
     nav_name = request.POST.get('navName', None)
-    # if nav_id and nav_name:
-    filter_conditions = models.KmsHomePageSettings.objects.filter(id=nav_id,nav_name=nav_name).values('filter_conditions')
+    # conditions = models.KmsHomePageSettings.objects.filter(id=nav_id,nav_name=nav_name).values('filter_conditions')
+    # print(conditions[0]['filter_conditions'])
     sql = "SELECT `id`, `uuid`, `title`, `issuer`, `issuer_dept`, `classify_name`, `release_date`, `auditor`, `remarks`, " \
           "`issue_type`, `del_status`, `doc_status`, `details`, `describe`, `solution`, `return_reason` " \
-          "FROM `kms_app_kmsdocinfo` WHERE " + filter_conditions[0]['filter_conditions']
+          "FROM `kms_app_kmsdocinfo`"
+    # 首页左侧菜单查询对应条件
+    query_conditions = {
+        '全部文档': sql + 'WHERE del_status = 0 AND doc_status = "发布"',
+        '待提交文档': sql + 'WHERE del_status = 0 AND doc_status = "保存" AND issuer_account = "' + request.session['username']+'"',
+        '已提交文档': sql + 'WHERE del_status = 0 AND doc_status = "审核" AND issuer_account = "' + request.session['username']+'"',
+        '已发布文档': sql + 'WHERE del_status = 0 AND doc_status = "发布" AND issuer_account = "' + request.session['username']+'"',
+        '审核失败': sql + 'WHERE del_status = 0 AND doc_status = "退回" AND issuer_account = "' + request.session['username']+'"',
+        '待审核文档': sql + 'WHERE del_status = 0 AND doc_status = "审核" AND auditor_account = "' + request.session['username']+'"',
+        '已审核文档': sql + 'WHERE del_status = 0 AND doc_status = "发布" AND auditor_account = "' + request.session['username']+'"',
+        '已退回': sql + 'WHERE del_status = 0 AND doc_status = "退回" AND auditor_account = "' + request.session['username']+'"',
+    }
     # cursor = connection.cursor()
     # cursor.execute(sql)
-    raw_query_set = models.KmsDocInfo.objects.raw(sql)  # 原生sql查询
+    raw_query_set = models.KmsDocInfo.objects.raw(query_conditions[nav_name])  # 原生sql查询
     doc_info_list = list()
     for obj in raw_query_set:
         # 循环查询的RawQuerySet对象，将结果添加到doc_info_list列表中，用于分页使用
         doc_info_list.append(obj)
 
-    pag = Paginator(doc_info_list,16)    # 定义分页器，每页显示10条
+    pag = Paginator(doc_info_list, 16)    # 定义分页器，每页显示16条
     page = request.POST.get('page', None)     # 从前端获取当前的页码数
 
     try:
@@ -134,6 +145,7 @@ def query_index_data(request):
         temp_dict['issuer_dept'] = i.issuer_dept
         temp_dict['auditor'] = i.auditor
         temp_dict['release_date'] = str(i.release_date)
+        temp_dict['doc_status'] = i.doc_status
         result_list.append(temp_dict)
 
     return HttpResponse(json.dumps({'status':True,'result_list':result_list,'page_dict':page_dict}))
@@ -151,6 +163,7 @@ def release(request):
         show_name = request.session['show_name']
         current_time = time.strftime('%Y-%m-%d')    # 当前时间
         doc_uuid = request.GET.get('doc_uuid', None)      # 获取当前文件的uuid
+
         # 获取当前用户所在部门的id
         group = models.KmsUser.objects.filter(username=username).values('groups__id','groups__dept_name')
         # 获取部门内的所有人
@@ -175,16 +188,22 @@ def release(request):
                     pro_data['category'] = j
                     pro_data['nodes'].append(k)
             result_list.append(pro_data)
-
-        if doc_uuid is None:    # 生成文档uuid
-            doc_uuid = uuid.uuid1()     # 文档uuid
-            os.mkdir(os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str(doc_uuid)))
-        else:
-            file_path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str(doc_uuid))
-            # 每次刷新后 shutil.rmtree() 先强制删除所有文件，然后在重新创建 doc_uuid 文件夹
-            # shutil.rmtree(os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str(doc_uuid)))
-            if not os.path.exists(file_path):
+        # 用uuid查询当前文档是否存在数据库中
+        query_data = models.KmsDocInfo.objects.filter(uuid=doc_uuid).values('uuid','title','issuer','issuer_dept','classify_name',
+                                                               'release_date','auditor','remarks','issue_type','details',
+                                                               'describe','solution','return_reason')
+        if not query_data:
+            if doc_uuid is None:
+                doc_uuid = uuid.uuid1()     # 生成文档uuid，并以uuid创建文件存放目录
                 os.mkdir(os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str(doc_uuid)))
+            else:
+                file_path = os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str(doc_uuid))
+                # 每次刷新后 shutil.rmtree() 先强制删除所有文件，然后在重新创建 doc_uuid 文件夹
+                # shutil.rmtree(os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str(doc_uuid)))
+                if not os.path.exists(file_path):
+                    os.mkdir(os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str(doc_uuid)))
+        else:
+            print(query_data)
 
         return render(request, 'release.html', {'show_name': show_name, 'current_time': current_time, 'auditor_list': auditor_list,
                                                 'dept_name': group[0]['groups__dept_name'], 'category_list': result_list,'doc_uuid': doc_uuid})
@@ -303,8 +322,10 @@ def del_doc(request):
     if request.method == 'POST':
         uuid_list = request.POST.getlist('uuidSet',None)
         for i in json.loads(uuid_list[0]):
-            ret = models.KmsDocInfo.objects.filter(uuid=i).delete()
-            shutil.rmtree(os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str(i)))
+            doc = models.KmsDocInfo.objects.filter(uuid=i)
+            if not doc:
+                doc.delete()
+                shutil.rmtree(os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str(i)))
     return HttpResponse(json.dumps({'status': True}))
 
 def save_doc(request):
@@ -322,17 +343,31 @@ def save_doc(request):
     describe = request.POST.get('describe1', None)
     solution = request.POST.get('solution1', None)
     list_url = request.POST.getlist('aryUrl', None)
-    if operation == 'save':
-        obj = models.KmsDocInfo.objects.create(uuid=doc_uuid,title=title,classify_name=classify_name,issuer=issuer,release_date=release_date,
-                                         auditor=auditor,issue_type=issue_type,remarks=remarks,issuer_dept=issuer_dept,details=details,
-                                         describe=describe,solution=solution,del_status=0,doc_status=SAVE)
-    elif operation == 'submit':
-        obj = models.KmsDocInfo.objects.create(uuid=doc_uuid,title=title,classify_name=classify_name,issuer=issuer,release_date=release_date,
-                                         auditor=auditor,issue_type=issue_type,remarks=remarks,issuer_dept=issuer_dept,details=details,
-                                         describe=describe,solution=solution,del_status=0,doc_status=EXAMINE)
+    # 如果出现异常视为重新编辑后提交或保存的文档
+    try:
+        if operation == 'save':
+            obj = models.KmsDocInfo.objects.create(uuid=doc_uuid,title=title,classify_name=classify_name,issuer=issuer,release_date=release_date,
+                                             auditor=auditor,issue_type=issue_type,remarks=remarks,issuer_dept=issuer_dept,details=details,
+                                             describe=describe,solution=solution,del_status=0,doc_status=SAVE)
+        elif operation == 'submit':
+            obj = models.KmsDocInfo.objects.create(uuid=doc_uuid,title=title,classify_name=classify_name,issuer=issuer,release_date=release_date,
+                                             auditor=auditor,issue_type=issue_type,remarks=remarks,issuer_dept=issuer_dept,details=details,
+                                             describe=describe,solution=solution,del_status=0,doc_status=EXAMINE)
+    except Exception as e:
+        # 出现异常后说明是重新编辑提交的需要使用update更新数据库中的数据
+        if operation == 'save':
+            obj = models.KmsDocInfo.objects.filter(uuid=doc_uuid).update(uuid=doc_uuid,title=title,classify_name=classify_name,
+                issuer=issuer,release_date=release_date,auditor=auditor,issue_type=issue_type,remarks=remarks,
+                issuer_dept=issuer_dept,details=details,describe=describe,solution=solution,del_status=0,doc_status=SAVE)
+        elif operation == 'submit':
+            obj = models.KmsDocInfo.objects.filter(uuid=doc_uuid).update(uuid=doc_uuid,title=title,classify_name=classify_name,
+                issuer=issuer,release_date=release_date,auditor=auditor,issue_type=issue_type,remarks=remarks,
+                issuer_dept=issuer_dept,details=details,describe=describe,solution=solution,del_status=0,doc_status=EXAMINE)
+
 
     for dict_url in json.loads(list_url[0]):
         models.KmsFilePath.objects.create(doc_info_id=obj.id,uuid=doc_uuid,path=dict_url['url'],name=dict_url['name'])
+
     return HttpResponse(json.dumps({'status': True}))
 
 def view_form(request):

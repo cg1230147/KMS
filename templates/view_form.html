@@ -60,7 +60,9 @@
                     <tr class="describe">
                         <td class="td-name">问题描述</td>
                         <td colspan="5">
+                            {% autoescape off %}
                             <div>{{ data.describe }}</div>
+                            {% endautoescape %}
                         </td>
                     </tr>
                     {% endif %}
@@ -68,7 +70,9 @@
                     <tr class="solution">
                         <td class="td-name">解决方案</td>
                         <td colspan="5">
+                            {% autoescape off %}
                             <div>{{ data.solution }}</div>
+                            {% endautoescape %}
                         </td>
                     </tr>
                     {% endif %}
