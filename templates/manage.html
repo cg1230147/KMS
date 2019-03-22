@@ -42,7 +42,7 @@
         }
         .manage-content{
             height: 93%;
-            <!--width: 100%;-->
+            /*width: 100%;*/
         }
         .department-manage, .knowledge-manage{
             width: 265px;
@@ -52,6 +52,9 @@
         }
         .mark-required{
             color: red;
+        }
+        #panel-user .form-control{
+            height: 30px;!important;
         }
     </style>
 {% endblock %}
@@ -79,9 +82,10 @@
 {% endblock %}
 
 {% block page_body_right_content %}
-    <div class="manage-content" style="margin-left:5px;border-top: 1px solid #ddd;overflow-y: scroll">
+{#    <div class="manage-content" style="margin-left:5px;border-top: 1px solid #ddd;overflow-y: scroll;width: 100%;height: 88%;">#}
+    <div class="manage-content" style="padding-left:5px;width: 100%;height: 87%;overflow-y: scroll;margin-top: 1px;border-top: 1px solid #dddddd">
         <div class="user-manage">
-            <table>
+            <table id="user-table">
                 <thead>
                     <tr>
                         <th></th>
@@ -101,7 +105,7 @@
             <div id="dept-tree" class="tree-form"></div>
         </div>
         <div class="dept-level-manage hide">
-            <table>
+            <table id="dept-table">
                 <thead>
                     <tr>
                         <th style="width: 5%"></th>
@@ -113,7 +117,7 @@
             </table>
         </div>
         <div class="permission-manage hide">
-            <table>
+            <table id="permission-table">
                 <thead>
                     <tr>
                         <th style="width: 5%"></th>
@@ -128,7 +132,7 @@
             <div id="knowledge-tree" class="tree-form"></div>
         </div>
         <div class="homepage-manage hide">
-            <table>
+            <table id="homepage-table">
                 <thead>
                     <tr>
                         <th style="width: 5%"></th>
@@ -142,6 +146,11 @@
             </table>
         </div>
     </div>
+    <div id="paging" style="height: 6%;width: 100%;padding-left: 5px;">
+        <nav aria-label="Page navigation" style="position: absolute;bottom: 0px;width: 99.6%">
+            <ul class="pagination" style="display:flex; margin: 0;width: 100%;background-color: #e3e3e3;background: linear-gradient(#e2e2e2, #afaeae);"></ul>
+        </nav>
+    </div>
 {% endblock %}
 
 {% block page-footer %}
@@ -149,7 +158,6 @@
 {% endblock %}
 
 {% block script %}
-    <script src="/static/plugins/js/jquery-3.3.1.js"></script>
     <script src="/static/plugins/js/jquery.cookie.js"></script>
     <script src="/static/plugins/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
     <script src="/static/js/treeview.js" type="text/javascript"></script>
@@ -346,7 +354,6 @@
                                     let sel = $('#department-level');
                                     let firstEle = sel.children().first();
                                     sel.empty().append(firstEle);
-                                    console.log(data.query_data)
                                     for (let i=0;i<data.query_data.length;i++){
                                         let option = "<option value="+data.query_data[i].department_level+" supCorrelateId="+data.query_data[i].superior_correlate_id+">"
                                                     + data.query_data[i].department_level+"</option>";
@@ -434,7 +441,6 @@
                          let navName = checked.parent().nextAll('[name=nav-name]').text();
                          let viewPermissionsId = checked.parent().nextAll('[name=view-permissions]').attr('viewpermissionsid');
                          let filterConditions = checked.parent().nextAll('[name=filter-conditions]').text();
-                         console.log(navName,viewPermissionsId,filterConditions)
                          $('#nav-name').val(navName);
                          $('#view-permissions').selectpicker('val',viewPermissionsId);
                          $('#filter-conditions').val(filterConditions)
@@ -561,6 +567,7 @@
                 var phoneNumber = $('#phone-number').val();
                 var regDepartment = $('#reg-department option:selected').val();
                 var regPermission = $('#reg-permission').val();
+
                 if(userName == "" && showUsername == "" && password == "" && regDepartment == ""){
                     $('#panel-user .mark-required').parent().nextAll('.error').removeClass('hide');
                     return false;
@@ -591,7 +598,11 @@
                     return false;
                 }else if (regDepartment == ""){
                     $('#reg-department').next().removeClass('hide');
-                } else{
+                    return false;
+                }else if (regPermission == ""){
+                    $('#reg-permission').parent().next().removeClass('hide');
+                    return false;
+                }else{
                     var handle = $('.home-classify').find('.active').attr('handle');
                     if (this.url == '/add/'){
                         var data = {
@@ -636,6 +647,7 @@
                                     $('#panel-user').find('[name='+key+']').next().removeClass('hide').text(data.message[key][0].message);
                                 }
                             }else if (data.status == true) {
+                                $.hideAddPanel();
                                 alert(data.message);
                             }
                         }
@@ -646,7 +658,6 @@
             AddEditDeptLevel:function () {
                 let deptLevel = $('#department-level-2').val();
                 let supCorrelate = $('#superior-correlate option:selected').val() | '';
-                console.log(supCorrelate)
                 if(deptLevel.length === 0){
                     $('#department-level-2').next().removeClass('hide');
                     return false;
@@ -870,17 +881,22 @@
             },
         };
 
+        function GetUserPagingData(page) {
+            GetNavClassifyData("[handle=panel-user]", page)
+        }
+
         // 查询动态生成导航分类数据
-        function GetNavClassifyData(self) {
+        function GetNavClassifyData(self,page) {
             let handle = $(self).attr('handle');
             $.ajax({
-                url:/query/,
+                url: /query/,
                 method: 'post',
                 dataType: 'json',
-                data: {'handle': handle},
+                data: {'handle': handle, 'page': page},
                 success: function (data) {
                     if(data.status === true){
                         if (handle == 'panel-user'){
+                            $('#paging').removeClass('hide').prev().css('height','87%');  // 显示分页元素;
                             // 生成用户列表
                             let tbody = $('.user-manage tbody');
                             tbody.empty();
@@ -900,11 +916,50 @@
                                 tbody.append("<tr></tr>");
                                 tbody.children('tr').last().append(td);
                             }
+                            // ===============================分页 start==================================
+                            $('.pagination').empty();
+                            //上一页
+                            if (data.paging_param.has_per_page) {
+                                let perPage = '<li><a href="#" aria-label="Previous" onclick="GetUserPagingData('
+                                    + data.paging_param.per_page_number + ')"><span aria-hidden="true">&laquo;</span></a></li>';
+                                $('.pagination').append(perPage)
+                            } else {
+                                let perPage = '<li><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>';
+                                $('.pagination').append(perPage)
+                            }
+                            // 页码
+                            for (let i = 0; i < data.paging_param.curr_show_pages.length; i++) {
+                                if (data.paging_param.current_page === data.paging_param.curr_show_pages[i]) {
+                                    let page = '<li><a href="#" style="background-color: #eeeeee;" onclick="GetSearchPagingData(' +
+                                        data.paging_param.curr_show_pages[i] + ');">' + data.paging_param.curr_show_pages[i] + '</a></li>';
+                                    $('.pagination').append(page)
+                                } else {
+                                    let page = '<li><a href="#" onclick="GetUserPagingData(' +
+                                        data.paging_param.curr_show_pages[i] + ');">' + data.paging_param.curr_show_pages[i] + '</a></li>';
+                                    $('.pagination').append(page)
+                                }
+                            }
+
+                            // 下一页
+                            if (data.paging_param.has_next_page) {
+                                let nextPage = '<li><a href="#" aria-label="Next" onclick="GetUserPagingData(' +
+                                    data.paging_param.next_page_number + ')"><span aria-hidden="true">&raquo;</span></a></li>';
+                                $('.pagination').append(nextPage)
+                            } else {
+                                let nextPage = '<li><a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>';
+                                $('.pagination').append(nextPage)
+                            }
+                            $('.pagination').append('<li style="position: absolute;align-self: center;right: 10px;">总页数:' +
+                                data.paging_param.total_page + '页</li>')
+                            // ===============================分页 end==================================
+
                         } else if (handle == 'panel-department'){
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
                             // 生成部门树
                             $('#dept-tree').empty().createdTree(data.query_data);
                             $.fn.unfoldFold();
                         } else if (handle == 'panel-dept-level'){
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
                             // 生成部门列表
                             let tbody = $('.dept-level-manage tbody');
                             // 每次清空在添加内容
@@ -919,6 +974,7 @@
                                 tbody.children('tr').last().append(td);
                             }
                         } else if (handle == 'panel-permission'){
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
                             // 生成权限列表
                             let tbody = $('.permission-manage tbody');
                             tbody.empty();
@@ -933,6 +989,7 @@
                             }
 
                         } else if (handle == 'panel-knowledge') {
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
                             $('#knowledge-tree').empty();
                             if ($('#knowledge-tree').children().length === 0) {
                                 $('#knowledge-tree').append('<ul class="root-node"></ul>')
@@ -971,6 +1028,7 @@
                             }
                             $.fn.unfoldFold();  // 展开折叠事件
                         } else if (handle == 'panel-homepage') {
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
                             // 生成导航列表
                             let tbody = $('.homepage-manage tbody');
                             tbody.empty();
@@ -990,6 +1048,7 @@
                 }
             })
         };
+
         function AddDepartment() {
             obj = new BtnMethod('/add/');
             obj.AddEditDepartment();

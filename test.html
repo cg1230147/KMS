@@ -53,8 +53,33 @@
 
         <button type="submit" class="btn btn-default">保存</button>
     </form>
+    <p id="asdsadsa">adsadasdsad</p>
+    <button type="button" onclick="Btn(this);" value="b1">BTN1</button>
+    <button type="button" onclick="Btn(this);" value="b2">BTN2</button>
     <!--<script src="F:/py_code/webFrame/KMS/static/plugins/js/jquery-3.3.1.js"></script>-->
     <script>
+        /*
+        function Btn(self){
+            console.log(self.value)
+            while (true){
+                if (self.value === 'b1'){
+                    alert('b1b1b1b1b1')
+                    break
+                } else {
+                    alert('b2b2b2b2b2')
+                    return 'bbbbbbb';
+                }
+            }
+        }
+        ret = Btn();
+        console.log(ret)*/
+        function mo(){
+            //let obj = document.elementFromPoint(event.clientX,event.clientY);
+            console.log(event.srcElement)
+        }
+
+        document.onclick=mo;
+
         //window.open('https://www.baidu.com')
         //window.location.href='https://www.baidu.com'
 
@@ -70,7 +95,6 @@
             confirm('dddddddd')
             return '真的要关闭吗？？？？？';
         }*/
-
         window.onbeforeunload = function(event) {
     return beforunload(event);
 };
@@ -111,7 +135,17 @@ function myBrowser() {
         return "IE";
     };
 }
-
+    function f1(ss,callback) {
+        console.log(ss);
+        let ret = callback();
+        console.log(ret)
+        console.log('22222')
+    }
+    function f2() {
+        //console.log('callback')
+        return '+++++++++++++++';
+    }
+    f1('f1f1f1',f2);
 
         /*
         $('#test').append('<div id="curr" onclick="ale();">ddddd</div>');

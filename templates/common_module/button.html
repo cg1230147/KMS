@@ -2,25 +2,31 @@
 <div style="height: 6%">
     <div class="body-btn btn-group pull-left">
         <!-- IE浏览器或 360浏览器等等 button包含a标签时回忽略 href 属性 -->
-{#        <button class="btn btn-default"><a href="{% url "release" %}">发布</a></button>#}
         <button class="btn btn-default" onclick="window.open('/release/')">发布</button>
-        <button class="btn btn-default">全选</button>
-        <button class="btn btn-default">反选</button>
+        <button class="btn btn-default" id="check-all">全选</button>
+        <button class="btn btn-default" id="invert-sel">反选</button>
         {% if '管理员' in permission %}
-            <button class="btn btn-default">删除</button>
+        <button class="btn btn-default" onclick="BatchDeleteDoc();">删除</button>
         {% endif %}
     </div>
-    <!--
-    <div class="search btn-group-sm">
-        <input type="text" name="search"/>
-        <button class="btn btn-default" style="height: 28px;width: 50px;text-align: center;">搜索</button>
-    </div>-->
-        <div class="col-lg-6 pull-right" style="right: 2px">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="关键字">
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="button">搜索</button>
-                </span>
-            </div>
+    <div class="col-lg-6 pull-right" style="right: 2px;width: 50%;">
+        <select class="form-control" name="search-category" style="width: 18%;position:absolute;">
+            <option value="fuzzy_search">模糊搜索</option>
+            <option value="title__contains">标题</option>
+            <option value="issuer__contains">发布人</option>
+            <option value="classify_name__contains">分类</option>
+            <option value="release_date__contains">发布日期</option>
+            <option value="issuer_dept__contains">发布部门</option>
+            <option value="auditor__contains">审核人</option>
+            <option value="subject__contains">主题词</option>
+            <option value="issue_type__contains">发布类型</option>
+        </select>
+        <div class="input-group" style="margin-left: 19%;">
+            <input type="text" class="form-control" name="search" placeholder="请输入搜索的关键字！">
+            <span class="input-group-btn">
+                <button class="btn btn-default" type="button" onclick="Search()">搜索</button>
+            </span>
         </div>
+    </div>
+
 </div>

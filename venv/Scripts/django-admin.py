@@ -1,4 +1,4 @@
-#!F:\py_code\webFrame\KMS\venv\Scripts\python.exe
+#!f:\py_code\webframe\kms\venv\scripts\python.exe
 from django.core import management
 
 if __name__ == "__main__":

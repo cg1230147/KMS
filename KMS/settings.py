@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -25,7 +24,7 @@ SECRET_KEY = 'v*nnm+qred6f+p*&(@==g31zj@tcv(0d0($h*q#iovq7o*l7zi'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'www.mykms.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,13 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'kms_app.apps.KmsAppConfig',
+
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -156,7 +156,7 @@ SESSION_COOKIE_PATH = "/"           # Session的cookie保存的路径
 SESSION_COOKIE_DOMAIN = None        # Session的cookie保存的域名
 SESSION_COOKIE_SECURE = False       # 是否Https传输cookie
 SESSION_COOKIE_HTTPONLY = True      # 是否Session的cookie只支持http传输,等于True js无法获取到
-SESSION_COOKIE_AGE = 1209600        # Session的cookie失效日期（2周）
-# SESSION_COOKIE_AGE = 1800
+SESSION_COOKIE_AGE = 86400          # Session的cookie失效日期（1天,86400秒），如果不设置默认为2周
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # 是否关闭浏览器使得Session过期
 SESSION_SAVE_EVERY_REQUEST = False  # 是否每次请求都保存Session，默认修改之后才保存
+

@@ -13,11 +13,17 @@
 {% block page_body_left_classify %}
     <div class="home-classify">
         <ul class="list-group">
-            <li class="list-group-item">Domino9.0</li>
-            <li class="active list-group-item">Domino8.0</li>
-            <li class="list-group-item">java1.0</li>
-            <li class="list-group-item">java2.0</li>
-            <li class="list-group-item">华能移动办公</li>
+            {% for i in classify_list %}
+                <li class="list-group-item" onclick="ShowSubMenu(this)" style="padding-left: 80px;">{{ i.category }}</li>
+                {% if i.nodes %}
+                    <ul class="list-group hide" style="margin-bottom: 1px">
+                        {% for j in i.nodes %}
+                            <li class="list-group-item" style="padding-left: 100px;"
+                                onclick="QueryClassifiedData(this);">{{ j.classify_name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endfor %}
         </ul>
     </div>
 {% endblock %}
@@ -27,36 +33,169 @@
 {% endblock %}
 
 {% block page_body_right_content %}
-    <div class="content" style="padding-left:5px;">
-        <table>
-            <tr>
-                <th></th>
-                <th style="width: 40%">标题</th>
-                <th>发布人</th>
-                <th>分类</th>
-                <th>发布日期</th>
-                <th>备注</th>
-            </tr>
-            <tr>
-                <td style="width: 5%"><input type="checkbox"/></td>
-                <td style="text-align: left">1asddddasd ad </td>
-                <td>1</td>
-                <td>1</td>
-                <td>1</td>
-                <td>1</td>
-            </tr>
-            <tr>
-                <td><input type="checkbox"/></td>
-                <td style="text-align: left">aaaaaaaaaa</td>
-                <td>1</td>
-                <td>1</td>
-                <td>1</td>
-                <td>1</td>
-            </tr>
+    <div class="content" style="padding-left:5px;width: 100%;height: 87%;overflow-y: scroll">
+        <table id="table" style="height: 100%">
+            <thead>
+                <tr>
+                    <th style="width: 5%"></th>
+                    <th style="width: 35%">标题</th>
+                    <th style="width: 10%">发布人</th>
+                    <th style="width: 20%">分类</th>
+                    <th style="width: 10%">发布部门</th>
+                    <th style="width: 10%">审核人</th>
+                    <th style="width: 10%">发布日期</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
         </table>
+    </div>
+    <div style="height: 6%;width: 100%;padding-left: 5px;">
+        <nav aria-label="Page navigation" style="position: absolute;bottom: 0px;width: 99%">
+            <ul class="pagination" style="display:flex; margin: 0;width: 100%;background-color: #e3e3e3;background: linear-gradient(#e2e2e2, #afaeae);"></ul>
+        </nav>
     </div>
 {% endblock %}
 
 {% block page-footer %}
     <div class="page-footer"></div>
+{% endblock %}
+
+{% block script %}
+    <script src="/static/js/search.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
+        });
+
+        function ShowSubMenu(self) {
+            if ($(self).hasClass('active')) {
+                $(self).removeClass('active').next('.list-group').addClass('hide');
+            }else {
+                $(self).addClass('active').next('.list-group').removeClass('hide');
+            }
+        }
+
+        function QueryClassifiedData(self, page) {
+            let classifyText = $(self).parent().prev().text();
+            let menuText = $(self).text();
+            $.ajax({
+                url: '/classify/',
+                method: 'post',
+                dataType: 'json',
+                data: {'classifyName': classifyText+'/'+menuText, 'page':page},
+                success: function (data) {
+                    if (data.status) {
+                        let tbody = $('.content table tbody');
+                        let pageNumber = 16;
+                        tbody.empty();
+                        for (let i = 0; i < pageNumber; i++) {
+                            if (data.query_data[i]) {
+                                var td = "<td><input type='checkbox'/></td>" +
+                                    "<td style='text-align: left;'><a href='/view_form/?doc_uuid=" +
+                                    data.query_data[i].uuid + "'target='_blank'>" + data.query_data[i].title + "</a></td>" +
+                                    "<td>" + data.query_data[i].issuer + "</td>" +
+                                    "<td>" + data.query_data[i].classify_name + "</td>" +
+                                    "<td>" + data.query_data[i].issuer_dept + "</td>" +
+                                    "<td>" + data.query_data[i].auditor + "</td>" +
+                                    "<td>" + data.query_data[i].release_date + "</td>";
+                            } else {
+                                var td = "<td></td><td style='text-align: left;'></td>" +
+                                    "<td></td>" + "<td></td>" + "<td></td>" + "<td></td>" + "<td></td>";
+                            }
+                            tbody.append("<tr></tr>");
+                            tbody.children('tr').last().append(td);
+                        }
+
+                        $('.pagination').empty();
+                        //上一页
+                        if (data.paging_param.has_per_page) {
+                            let perPage = '<li><a href="#" aria-label="Previous" onclick="GetPagingData(self,'
+                                + data.paging_param.per_page_number + ')"><span aria-hidden="true">&laquo;</span></a></li>';
+                            $('.pagination').append(perPage)
+                        } else {
+                            let perPage = '<li><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>';
+                            $('.pagination').append(perPage)
+                        }
+                        // 页码
+                        for (let i = 0; i < data.paging_param.curr_show_pages.length; i++) {
+                            if (data.paging_param.current_page === data.paging_param.curr_show_pages[i]) {
+                                let page = '<li><a href="#" style="background-color: #eeeeee;" onclick="GetPagingData(self,' +
+                                    data.paging_param.curr_show_pages[i] + ');">' + data.paging_param.curr_show_pages[i] + '</a></li>';
+                                $('.pagination').append(page)
+                            } else {
+                                let page = '<li><a href="#" onclick="GetPagingData(self,' +
+                                    data.paging_param.curr_show_pages[i] + ');">' + data.paging_param.curr_show_pages[i] + '</a></li>';
+                                $('.pagination').append(page)
+                            }
+                        }
+
+                        // 下一页
+                        if (data.paging_param.has_next_page) {
+                            let nextPage = '<li><a href="#" aria-label="Next" onclick="GetPagingData(self,' +
+                                data.paging_param.next_page_number + ')"><span aria-hidden="true">&raquo;</span></a></li>';
+                            $('.pagination').append(nextPage)
+                        } else {
+                            let nextPage = '<li><a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>';
+                            $('.pagination').append(nextPage)
+                        }
+                        $('.pagination').append('<li style="position: absolute;align-self: center;right: 10px;">总页数:' +
+                            data.paging_param.total_page + '页</li>')
+                    }
+                }
+            })
+        }
+
+        function GetPagingData(self, page) {
+            let activeNav = $('.list-group').find('.active');
+            QueryClassifiedData(activeNav, page);
+        }
+
+        function BatchDeleteDoc(){
+            let checked = $('#table').find('input[type=checkbox]:checked');
+            let pnc = checked.parent().next().children();
+            let reg = /(?<==).*$/;
+            let uuidSet = [];
+            for (let i=0; i<pnc.length;i++){
+                let doc_uuid = reg.exec($(pnc[i]).attr('href'))[0];
+                uuidSet.push(doc_uuid);
+            }
+            $.ajax({
+                url: '/del_doc/',
+                method: 'post',
+                dataType: 'json',
+                data: {'uuidSet': JSON.stringify(uuidSet)},
+                success: function (data) {
+                    if (data.status === true){
+                        alert('删除成功！')
+                    }
+                }
+            })
+        }
+
+        $(function () {
+            // 控制表格可自由拖动宽度
+            $('#table').colResizable({
+                resizeMode: "fit",
+                liveDrag: true,
+                draggingClass: "dragging",
+            });
+
+            // 全选
+            $('#check-all').click(function () {
+                $('.body-right tbody').find('input[type="checkbox"]').prop('checked', true);
+            });
+
+            // 反选
+            $('#invert-sel').click(function () {
+                let checked = $('.body-right tbody').find('input[type="checkbox"]');
+                $(checked).each(function () {
+                    if ($(this).prop('checked') == true){
+                       $(this).prop('checked', false);
+                    } else {
+                       $(this).prop('checked', true);
+                    }
+                });
+            });
+        })
+    </script>
 {% endblock %}

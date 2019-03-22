@@ -52,4 +52,44 @@ print(res)
 
 import shutil
 
-shutil.rmtree('F:\新建文件夹')
+# shutil.rmtree('F:\新建文件夹')
+
+# os.makedirs('f:/111/222')
+# dir = os.path.join(
+#         os.path.join(
+#             os.path.join(
+#                 os.path.dirname(os.path.dirname(__file__)), 'upload_files'), str('asdaskjhuh12hhud')),'attachment')
+# print(dir)
+"""
+class T(object):
+    __instance = None
+    def __new__(cls, *args, **kwargs):
+        print(cls.__instance,cls,object)
+        if cls.__instance == None:
+            cls.__instance = object.__new__(cls)
+            return cls.__instance
+        else:
+            return cls.__instance
+
+s = T()
+print(id(s))
+a = T()
+print(id(a))
+"""
+
+li = [{'id': 16, 'nav_name': '待审核文档'}, {'id': 17, 'nav_name': '已审核文档'}, {'id': 18, 'nav_name': '已退回'}, {'id': 7, 'nav_name': '全部文档'}, {'id': 12, 'nav_name': '待提交文档'}, {'id': 13, 'nav_name': '已提交文档'}, {'id': 14, 'nav_name': '已发布文档'}, {'id': 15, 'nav_name': '审核失败'}]
+
+"""
+for i in range(len(li)):
+    # print(i)
+    for j in range(i+1,len(li)):
+        if li[i]['id'] > li[j]['id']:
+            li[i],li[j] = li[j],li[i]
+
+print(li)
+"""
+
+import os
+
+os.chdir(os.path.dirname(__file__))
+os.system('python manage.py clearsessions')

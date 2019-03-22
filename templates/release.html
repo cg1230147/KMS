@@ -7,278 +7,498 @@
     <link href="/static/plugins/font-awesome-4.7.0/css/font-awesome.css" type="text/css" rel="stylesheet">
     <link href="/static/plugins/bootstrap-fileinput-master/css/fileinput.min.css" type="text/css" rel="stylesheet">
     <link href="/static/css/formstyle.css" type="text/css" rel="stylesheet">
+    <style>
 
+    </style>
 </head>
 <body>
-    <div class="release-pages" >
-        {% csrf_token %}
-        <div class="page-header" style="text-align: center;">
+<div class="release-pages">
+    {% csrf_token %}
+    <div class="page-header" style="text-align: center;">
+        {% if data.issue_type %}
+            <h1>{{ data.issue_type }}</h1>
+        {% else %}
             <h1>知识发布</h1>
-        </div>
-        <div class="page-body">
-            <form id="release_form">
-                <table width="100%" cellspacing="0" cellpadding="0">
-                    <tr>
-                        <td class="td-name">标题</td>
-                        <td colspan="5">
-                            <input type="text" id="title" name="title" required oninvalid="setCustomValidity('请填写题名');" oninput="setCustomValidity('');"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="td-name" style="width: 10%">分类</td>
-                        <td style="width: 24%;position: relative">
-                            <input type="text" name="classify" id="classify" class="drop-down-classify" onfocus="this.blur()" required oninvalid="setCustomValidity('请选择分类');" oninput="setCustomValidity('');"/>
-                            <ul class="drop-down-list">
-                                {% for i in category_list %}
+        {% endif %}
+    </div>
+    <div class="page-body">
+        <form id="release_form" name="release_form">
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td class="td-name">标题</td>
+                    <td colspan="5">
+                        <input type="text" id="title" name="title" value="{{ data.title }}" required
+                               oninvalid="setCustomValidity('请填写题名');" oninput="setCustomValidity('');"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="td-name" style="width: 10%">分类</td>
+                    <td style="width: 24%;position: relative">
+                        <input type="text" name="classify" id="classify" class="drop-down-classify"
+                               value="{{ data.classify_name }}" onfocus="this.blur()" required
+                               oninvalid="setCustomValidity('请选择分类');" oninput="setCustomValidity('');"/>
+                        <ul class="drop-down-list">
+                            {% for i in category_list %}
                                 <li class="drop-down-menu">
                                     <div class="level-one-menu">{{ i.category }}</div>
                                     <ul class="level-two-menu">
                                         {% for j in i.nodes %}
-                                        <li class="menu-content">{{ j.classify_name }}</li>
+                                            <li class="menu-content">{{ j.classify_name }}</li>
                                         {% endfor %}
                                     </ul>
                                 </li>
-                                {% endfor %}
-                            </ul>
-                        </td>
-                        <td class="td-name" style="width: 10%">发布人</td>
-                        <td style="width: 23%">
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td class="td-name" style="width: 10%">发布人</td>
+                    <td style="width: 23%">
+                        {% if data.issuer %}
+                            <input type="text" name="issuer" value="{{ data.issuer }}"/>
+                        {% else %}
                             <input type="text" name="issuer" value="{{ show_name }}"/>
-                        </td>
-                        <td class="td-name" style="width: 10%">发布日期</td>
-                        <td style="width: 23%">
+                        {% endif %}
+
+                    </td>
+                    <td class="td-name" style="width: 10%">发布日期</td>
+                    <td style="width: 23%">
+                        {% if data.release_date %}
+                            <input class="date" name="release_date" type="date" value="{{ data.release_date }}"/>
+                        {% else %}
                             <input class="date" name="release_date" type="date" value="{{ current_time }}"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="td-name" style="width: 10%">发布部门</td>
-                        <td style="width: 23%">
-                            <input type="text" name="issuer_dept" value="{{ dept_name }}"/>
-                        </td>
-                        <td class="td-name" style="width: 10%">审核人</td>
-                        <td style="width: 24%">
-                            <select id="type-select" name="auditor" required oninvalid="setCustomValidity('请选择审核人');" oninput="setCustomValidity('');">
-                                <option value=""></option>
-                                {% for i in auditor_list %}
-                                    <option value="{{ i }}">{{ i }}</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td class="td-name" style="width: 10%">发布类型</td>
-                        <td>
-                            <select id="type-select" name="type" onchange="TypeChange(this);">
-                                <option value="1">知识发布</option>
-                                <option value="2">问题发布</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="td-name">备注</td>
-                        <td colspan="6">
-                            <textarea class="remark" name="remarks"></textarea>
-                        </td>
-                    </tr>
-                    <tr class="describe hide">
-                        <td class="td-name">问题描述</td>
-                        <td colspan="5">
-                            <div id="edit-toolbar-describe"></div>
-                            <div id="edit-textare-describe" style="height: 150px;border-top: 1px solid #DDDDDD"></div>
-                        </td>
-                    </tr>
-                    <tr class="solution hide">
-                        <td class="td-name">解决方案</td>
-                        <td colspan="5">
-                            <div id="edit-toolbar-solution"></div>
-                            <div id="edit-textare-solution" style="height: 300px;border-top: 1px solid #DDDDDD"></div>
-                        </td>
-                    </tr>
-                    <tr class="details">
-                        <td class="td-name">详细信息</td>
-                        <td colspan="5">
-                            <div id="edit-toolbar-details"></div>
-                            <div id="edit-textare-details" style="height: 300px;border-top: 1px solid #DDDDDD"></div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="td-name">附件信息</td>
-                        <td colspan="6">
-                            <input id="upload-file" type="file" class="file-loading" name="attachment"  multiple style="padding-top: 7px"/>
-                        </td>
-                    </tr>
-                </table>
-                <div class="btn-group" style="margin-left: 35%;padding:20px 0 50px 0">
-                    <button class="btn btn-default" type="submit" value="submit">提交</button>
-                    <button class="btn btn-default" type="submit" value="save">保存</button>
-                    <button class="btn btn-default" type="button" onclick="DeleteDoc();">删除</button>
-                </div>
-            </form>
-        </div>
-
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="td-name" style="width: 10%">发布部门</td>
+                    <td style="width: 23%">
+                        <input type="text" name="issuer_dept" value="{{ dept_name }}"/>
+                    </td>
+                    <td class="td-name" style="width: 10%">审核人</td>
+                    <td style="width: 24%">
+                        <select id="auditor-select" name="auditor" required oninvalid="setCustomValidity('请选择审核人');"
+                                oninput="setCustomValidity('');">
+                            <option value=""></option>
+                            {% for i in auditor_list %}
+                                {% if i.username == data.auditor_account %}
+                                    <option value="{{ i.username }}" selected="selected">{{ i.show_name }}</option>
+                                {% else %}
+                                    <option value="{{ i.username }}">{{ i.show_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="td-name" style="width: 10%">发布类型</td>
+                    <td>
+                        <select id="type-select" name="type" onchange="TypeChange(this);">
+                            <option value="知识发布">知识发布</option>
+                            <option value="问题发布">问题发布</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="td-name">主题词</td>
+                    <td colspan="5">
+                        <input type="text" id="subject" name="subject" value="{{ data.subject }}" required
+                               oninvalid="setCustomValidity('请填主题词');" oninput="setCustomValidity('');"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="td-name">备注</td>
+                    <td colspan="6">
+                        <textarea class="remark" name="remarks">{{ data.remarks }}</textarea>
+                    </td>
+                </tr>
+                <tr class="describe hide">
+                    <td class="td-name">问题描述</td>
+                    <td colspan="5">
+                        <div id="edit-toolbar-describe"></div>
+                        {% autoescape off %}
+                            <div id="edit-textare-describe"
+                                 style="height: 150px;border-top: 1px solid #DDDDDD">{{ data.describe }}</div>
+                        {% endautoescape %}
+                    </td>
+                </tr>
+                <tr class="solution hide">
+                    <td class="td-name">解决方案</td>
+                    <td colspan="5">
+                        <div id="edit-toolbar-solution"></div>
+                        {% autoescape off %}
+                            <div id="edit-textare-solution"
+                                 style="height: 300px;border-top: 1px solid #DDDDDD">{{ data.solution }}</div>
+                        {% endautoescape %}
+                    </td>
+                </tr>
+                <tr class="details">
+                    <td class="td-name">详细信息</td>
+                    <td colspan="5">
+                        <div id="edit-toolbar-details"></div>
+                        {% autoescape off %}
+                            <div id="edit-textare-details"
+                                 style="height: 300px;border-top: 1px solid #DDDDDD">{{ data.details }}</div>
+                        {% endautoescape %}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="td-name">附件信息</td>
+                    <td colspan="6">
+                        <input id="upload-file" type="file" class="file-loading" name="attachment" multiple
+                               style="padding-top: 7px"/>
+                    </td>
+                </tr>
+            </table>
+            <div class="btn-group" style="margin-left: 35%;padding:20px 0 50px 0">
+                <button class="btn btn-default" type="submit" value="submit">提交</button>
+                <button class="btn btn-default" type="submit" value="save">保存</button>
+                <button class="btn btn-default" type="button" value="del" onclick="DeleteDoc();">删除</button>
+            </div>
+            <div id="retModal" class="modal fade" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title">请填写退回原因</h4>
+                        </div>
+                        <div class="modal-body">
+                            <textarea class="form-control"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal" value="cancel"
+                                    onclick="return ModalBtn(this);">取消
+                            </button>
+                            <button type="button" class="btn btn-primary"  value="send_back"
+                                    name="confirm" onclick="ModalBtn(this);">确定
+                            </button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+        </form>
     </div>
+</div>
+<div>
+    <input type="text" name="doc_uuid" value="{{ doc_uuid }}" hidden>
+    <input type="text" name="doc_status" value="{{ doc_status }}" hidden><!-- value 为空时为新启文件 -->
+</div>
 
-    <div>
-        <input type="text" name="doc_uuid" value="{{ doc_uuid }}" hidden>
-    </div>
-    <script src="/static/plugins/js/jquery-3.3.1.js"></script>
-    <script src="/static/plugins/js/wangEditor.js"></script>
-    <script src="/static/plugins/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
-    <script src="/static/plugins/js/jquery.cookie.js"></script>
-    <script src="/static/plugins/bootstrap-fileinput-master/js/fileinput.js"></script>
-    <script src="/static/plugins/bootstrap-fileinput-master/js/locales/zh.js"></script>
-    <script>
-        history.pushState(null, null, window.location.href.split("?")[0]);
 
-        // 重置url地址
-        var url = window.location.href + '?doc_uuid='+$('[name=doc_uuid]').val()+'';
-        history.pushState(null, null, url);
+<script src="/static/plugins/js/jquery-3.3.1.js"></script>
+<script src="/static/plugins/js/wangEditor.js"></script>
+<script src="/static/plugins/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+<script src="/static/plugins/js/jquery.cookie.js"></script>
+<script src="/static/plugins/bootstrap-fileinput-master/js/fileinput.js"></script>
+<script src="/static/plugins/bootstrap-fileinput-master/js/locales/zh.js"></script>
+<script>
+    history.pushState(null, null, window.location.href.split("?")[0]);
 
-        // 禁用浏览器回退操作
+    // 重置url地址
+    var url = window.location.href + '?doc_uuid=' + $('[name=doc_uuid]').val() + '';
+    history.pushState(null, null, url);
+
+    // 禁用浏览器回退操作
+    history.pushState(null, null, document.URL);
+    window.addEventListener('popstate', function () {
         history.pushState(null, null, document.URL);
-        window.addEventListener('popstate', function () {
-            history.pushState(null, null, document.URL);
+    });
+
+    $.ajaxSetup({
+        data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
+    });
+
+    // ============================= wangEditor 富文本控件=============================
+    var E = window.wangEditor;
+    var describe = new E("#edit-toolbar-describe", "#edit-textare-describe");   // 问题描述
+    var solution = new E("#edit-toolbar-solution", "#edit-textare-solution");   // 解决方案
+    var details = new E("#edit-toolbar-details", "#edit-textare-details");      // 详细信息
+
+    describe.customConfig.uploadImgServer = '/media_upload/';     // 上传地址
+    describe.customConfig.uploadFileName = 'file';          // 自定义filename
+    describe.customConfig.showLinkImg = false;              // 隐藏网络图片功能
+    describe.customConfig.uploadImgHeaders = {'X-CSRFToken': $.cookie('csrftoken')}; // 设置传输时携带token
+    describe.customConfig.uploadImgParams = {doc_uuid: $('[name=doc_uuid]').val()};
+    describe.customConfig.uploadImgHooks = {
+        customInsert: function (insertImg, result, editor) {
+            let url = result.url;
+            insertImg(url)
+        }
+    };
+
+    solution.customConfig.uploadImgServer = '/media_upload/';
+    solution.customConfig.uploadFileName = 'file';
+    solution.customConfig.showLinkImg = false;
+    solution.customConfig.uploadImgHeaders = {'X-CSRFToken': $.cookie('csrftoken')};
+    solution.customConfig.uploadImgParams = {doc_uuid: $('[name=doc_uuid]').val()};
+    solution.customConfig.uploadImgHooks = {
+        customInsert: function (insertImg, result, editor) {
+            let url = result.url;
+            insertImg(url)
+        }
+    };
+
+    details.customConfig.uploadImgServer = '/media_upload/';
+    details.customConfig.uploadFileName = 'file';
+    details.customConfig.showLinkImg = false;
+    details.customConfig.uploadImgHeaders = {'X-CSRFToken': $.cookie('csrftoken')};
+    details.customConfig.uploadImgParams = {doc_uuid: $('[name=doc_uuid]').val()};
+    details.customConfig.uploadImgHooks = {
+        customInsert: function (insertImg, result, editor) {
+            let url = result.url;
+            insertImg(url)
+        }
+    };
+    /*
+    details.customConfig.onfocus = function(){
+        console.log('获取到焦点');
+        $(details.textSelector).css({"box-shadow": "", "border":"", "border-top": "1px solid #DDDDDD"})
+    };*/
+
+    describe.customConfig.zIndex = 0;
+    solution.customConfig.zIndex = 0;
+    details.customConfig.zIndex = 0;
+    describe.create();
+    solution.create();
+    details.create();
+
+    var MutationObserver = MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+    // 监听的DOM节点
+    // var target = document.querySelector('.w-e-text p');
+    var target = document.getElementsByClassName("w-e-text");
+    // 创建观察者对象
+    var observer = new MutationObserver(function (mutations) { //观察对象的回调函数
+        // 遍历所有MutationRecords
+        mutations.forEach(function (mutation) {
+            // removedNodes[0] 删除节点后记录的数组，mutation.removedNodes[0].tagName删除的节点名称
+            if (mutation.removedNodes[0] != null && mutation.removedNodes[0].tagName === 'IMG') {
+                // 获取img节点的src属性，并用 / 进行分割
+                var imgSrc = decodeURI(mutation.removedNodes[0].src);
+                var fileName = imgSrc.split('/').pop();
+                // 用ajax发送删除的图片名称
+                $.ajax({
+                    url: '/del_doc_file/',
+                    method: 'POST',
+                    {#headers: {'Sending-Method': 'MutationObserver'},#}
+                    dataType: 'json',
+                    data: {'fileName': fileName, 'doc_uuid': $('[name=doc_uuid]').val()},
+                    success: function (msg) {
+                        console.log(msg)
+                    }
+                })
+            }
+        })
+    });
+    // 监听的变动类型
+    var config = {attributes: true, childList: true, characterData: true, subtree: true};
+    observer.observe(target[0].firstChild, config);
+    observer.observe(target[1].firstChild, config);
+    observer.observe(target[2].firstChild, config);
+    // ============================= wangEditor end =============================
+
+    $(function () {
+        if ($('[name=doc_status]').val() === '审核') {
+            $('[value=submit]').val('release').text('发布');
+            // $('[value=save]').val('send_back').text('退回').attr("onclick","return SendBack(ModalBtn);");
+            $('[value=save]').val('send_back').text('退回').attr("type","button");
+            $('[value=del]').remove();
+            $('#release_form .btn-group').css('margin-left', '40%')
+        }
+
+        if ($('[name=doc_status]').val() === '保存' || $('[name=doc_status]').val() === '审核') {
+            // 重新编辑时加载完页面后选中发布类型
+            $('#type-select').val("{{ data.issue_type }}");
+            TypeChange($('#type-select')[0]);
+        }
+
+        // 退回触发的事件
+        $('[value=send_back]').click(function () {
+            $('#retModal').modal({
+                backdrop: 'static',
+                keyboard: false});
+            //return false;
+            /*
+            let msg = prompt('请输入审核不通过原因');
+            if (msg) {
+                sendBackMsg = msg;
+            } else {
+                return false;
+            }*/
+        });
+        // =============================分类下拉菜单控制============================
+        // 点击展开一级菜单
+        $('.drop-down-classify').click(function () {
+                // 避免与 $(document).click 点击事件冲突
+                event.stopPropagation();
+                $('.drop-down-list').slideDown(200);
+            }
+        );
+        // 阻止分类下拉菜单，点击空白区隐藏事件的传播
+        $('.drop-down-list').click(function () {
+            event.stopPropagation()
+        });
+        // 分类菜单悬浮事件
+        $('.drop-down-list').hover(function () {
+            $(this).slideDown(200);
+        }, function () {
+            $(this).slideUp(200);
+            $('.level-two-menu').slideUp(200)
+        });
+        // 点击空白区隐藏分类下拉菜单
+        $(document).click(function () {
+            $('.drop-down-list').slideUp(200)
+        });
+        // 展示二级菜单
+        $('.level-one-menu').click(function () {
+            $('.level-two-menu').hide();
+            $(this).next('.level-two-menu').slideDown(200);
+        });
+        // =============================== end =====================================
+
+        // 选择分类
+        $('.drop-down-list .menu-content').click(function () {
+            let classifyName = $(this).text();
+            let category = $(this).parent().prev().text();
+            $('.drop-down-classify').val(category + '/' + classifyName);
+            let classifyEle = document.getElementById('classify');
+            classifyEle.setCustomValidity("");  // 赋值完后取消自定义验证，否则一直返回false
+        });
+        // 修改审核人选项，选择后在ie edge等浏览器下验证不通过的问题
+        $('#auditor-select').change(function () {
+            // id=type-select 元素改变后取消自定义验证，否则ie edge浏览器无效
+            $(this)[0].setCustomValidity("")
         });
 
-        $.ajaxSetup({
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
-        });
+        // bootstarp fileinput 插件
+        var aryFiles = Array();
+        $('#upload-file').fileinput({
+            language: 'zh',     // 设置语言，需要引入locales/zh.js文件
+            uploadUrl: '/att_upload/',     // 上传路径
+            maxFileSize: 0,     // 上传文件大小限制，触发 msgSizeTooLarge 提示
+            // {name}：将被上传的文件名替换，{size}：将被上传的文件大小替换，{maxSize}：将被maxFileSize参数替换。
+            msgSizeTooLarge: '"{name}" ({size} KB) 超过允许的最大上传大小 {maxSize} KB。请重新上传!',
+            showPreview: true,  // 展示预览
+            showUpload: true,   // 是否显示上传按钮
+            showCaption: true,  // 是否显示文字描述
+            showClose: false,   // 隐藏右上角×
+            uploadAsync: true, // 是否异步上传
+            initialPreviewShowDelete: true, // 预览中的删除按钮
+            autoReplace: true,  // 达到最大上传数时，自动替换之前的附件
+            enctype: 'multipart/form-data',
+            uploadExtraData: function () {  // uploadExtraData携带附加参数，上传时携带csrftoken
+                return {csrfmiddlewaretoken: $.cookie('csrftoken'), doc_uuid: $('[name=doc_uuid]').val()}
+            },
+            {% if data.initialPreview and data.initialPreviewConfig %}
+                {% autoescape off %}
+                    initialPreview:{{ data.initialPreview }},
+                    initialPreviewConfig: {{ data.initialPreviewConfig }},
+                {% endautoescape %}
+            {% endif %}
 
-        $(function () {
-            // =============================分类下拉菜单控制============================
-            // 点击展开一级菜单
-            $('.drop-down-classify' ).click(function(){
-                    // 避免与 $(document).click 点击事件冲突
-                    event.stopPropagation();
-                    $('.drop-down-list').slideDown(200);
+        }).on("fileuploaded", function (e, data, previewId, index) {
+            // 上传成功后触发的事件
+        }).on("fileclear", function (e) {
+            // 移除按钮触发的事件
+            let doc_uuid = $('[name=doc_uuid]').val();
+            $.ajax({
+                url: '/del_all_att/',
+                method: 'post',
+                dataType: 'json',
+                data: {'doc_uuid': doc_uuid, 'aryFiles': JSON.stringify(aryFiles)},
+                success: function (data) {
+
                 }
-            );
-            // 阻止分类下拉菜单，点击空白区隐藏事件的传播
-            $('.drop-down-list').click(function () {
-                 event.stopPropagation()
-            });
-            // 分类菜单悬浮事件
-            $('.drop-down-list').hover(function () {
-                    $(this).slideDown(200);
-                },function () {
-                    $(this).slideUp(200);
-                    $('.level-two-menu').slideUp(200)
-            });
-            // 点击空白区隐藏分类下拉菜单
-            $(document).click(function () {
-                 $('.drop-down-list').slideUp(200)
-            });
-            // 展示二级菜单
-            $('.level-one-menu').click(function(){
-                    $('.level-two-menu').hide();
-                    $(this).next('.level-two-menu').slideDown(200);
-            });
-            // =============================== end =====================================
-
-            // 选择分类
-            $('.drop-down-list .menu-content').click(function () {
-                let classifyName = $(this).text();
-                let category = $(this).parent().prev().text();
-                $('.drop-down-classify').val(category+'/'+classifyName);
-                let classifyEle = document.getElementById('classify');
-                classifyEle.setCustomValidity("");  // 赋值完后取消自定义验证，否则一直返回false
-            });
-            // 修改审核选项，选择后在ie edge等浏览器下验证不通过的问题
-            $('#type-select').change(function () {
-                // id=type-select 元素改变后取消自定义验证，否则ie edge浏览器无效
-                $(this)[0].setCustomValidity("")
-            });
-
-            // bootstarp fileinput 插件
-            var aryFiles = Array();
-            $('#upload-file').fileinput({
-                language: 'zh',     // 设置语言，需要引入locales/zh.js文件
-                uploadUrl: '/att_upload/',     // 上传路径
-                maxFileSize: 0,     // 上传文件大小限制，触发 msgSizeTooLarge 提示
-                // {name}：将被上传的文件名替换，{size}：将被上传的文件大小替换，{maxSize}：将被maxFileSize参数替换。
-                msgSizeTooLarge: '"{name}" ({size} KB) 超过允许的最大上传大小 {maxSize} KB。请重新上传!',
-                showPreview: true,  // 展示预览
-                showUpload: true,   // 是否显示上传按钮
-                showCaption: true,  // 是否显示文字描述
-                showClose: false,   // 隐藏右上角×
-                uploadAsync: true, // 是否异步上传
-                initialPreviewShowDelete: true, // 预览中的删除按钮
-                autoReplace: true,  // 达到最大上传数时，自动替换之前的附件
-                enctype: 'multipart/form-data',
-                uploadExtraData: function () {  // uploadExtraData携带附加参数，上传时携带csrftoken
-                    return {csrfmiddlewaretoken: $.cookie('csrftoken'), doc_uuid: $('[name=doc_uuid]').val()}
-                },
-                initialPreview :[],
-                initialPreviewConfig: [],
-            }).on("fileuploaded", function (e,data,previewId,index) {
-                // 上传成功后触发的事件
-            }).on("fileclear", function (e) {
-                // 移除按钮触发的事件
-                let doc_uuid = $('[name=doc_uuid]').val();
-                $.ajax({
-                    url: '/del_all_att/',
-                    method: 'post',
-                    dataType: 'json',
-                    data: {'doc_uuid': doc_uuid, 'aryFiles': JSON.stringify(aryFiles)},
-                    success: function (data) {
-
-                    }
-                })
-            }).on("filepredelete", function (e, key, jqXHR, data) {
-                // 预览中删除按钮，删除上传的文件触发的事件
-            }).on("fileloaded", function (e, file, previewId) {
-                // aryFile.length = 0;
-                // 加载预览后触发的事件，将所有文件名添加到全局变量 aryFiles 数组中
-                aryFiles.push(file.name);
-            });
-            $('#kvFileinputModal').find('textarea').css({"width": "100%", "height": "100%", "min-height": "480px"})
-            
+            })
+        }).on("filepredelete", function (e, key, jqXHR, data) {
+            // 预览中删除按钮，删除上传的文件触发的事件
+        }).on("fileloaded", function (e, file, previewId) {
+            // aryFile.length = 0;
+            // 加载预览后触发的事件，将所有文件名添加到全局变量 aryFiles 数组中
+            aryFiles.push(file.name);
         });
-        // 类型切换
-        function TypeChange(self){
-            let currentOption = $(self).find("option:selected");
-            let currentOptionVal = currentOption.val();
-            let currentOptionText = currentOption.text();
-            if (currentOptionVal === '1'){
-                $('.release-pages .page-header').children().text(currentOptionText);
-                $('.release-pages .details').removeClass('hide');
-                $('.release-pages .describe, .solution').addClass('hide');
-            } else if (currentOptionVal === '2'){
-                $('.release-pages .page-header').children().text(currentOptionText);
-                $('.release-pages .details').addClass('hide');
-                $('.release-pages .describe, .solution').removeClass('hide');
-            }
-        }
-        
-        function DeleteDoc() {
-            // 删除按钮，触发删除事件
-            let dataSet = [];
-            let msg = confirm('您确定要删除当前文档吗？');
-            if (msg === true) {
-                let uuid = $('[name=doc_uuid]').val();
-                dataSet.push(uuid);
-                $.ajax({
-                    url: '/del_doc/',
-                    method: 'post',
-                    dataType: 'json',
-                    data: {'uuidSet': JSON.stringify(dataSet)},
-                    success: function (data) {
-                        if (data.status){
-                            window.close();
-                        }
-                    }
-                })
-            }
-        }
-        /*
-        window.onbeforeunload=function (event){
-            alert("===onbeforeunload===");
-            if(event.clientX>document.body.clientWidth && event.clientY < 0 || event.altKey){
-                alert("你关闭了浏览器");
-            }else{
-                alert("你正在刷新页面");
-            }
-        }*/
 
-        window.onbeforeunload = function (event) {
+        $('#kvFileinputModal').click(function () {
+            $(this).find('textarea').css({"width": "100%", "height": "100%", "min-height": "480px"})
+        });
+
+        $('#release_form').find('[type=submit]').click(function () {
+            let requiredArr = $('#release_form [required]');
+            for (let i=0;i<requiredArr.length;i++){
+                if ($(requiredArr[i]).val() === ""){
+                    return;
+                }
+            }
+            let typeVal = $('#type-select').val();
+            if (typeVal === "知识发布"){
+                let details = $('#edit-textare-details');
+                if (details.text() === ""){
+                    /*
+                    details.css({
+                        "box-shadow": "#ff00009e 0px 0px 10px 0px",
+                        "border": "1px solid #ff000096",
+                    });*/
+                    alert('请填写详细信息！');
+                    return false;
+                } else {
+                    return true
+                }
+            } else if (typeVal === "问题发布") {
+                let describe = $('#edit-textare-describe');
+                let solution = $('#edit-textare-solution');
+                if (describe.text() === ""){
+                    alert('请填写问题描述！');
+                    return false;
+                } else if (solution.text() === ""){
+                    alert('请填写解决方案！');
+                    return false;
+                } else {
+                    return true
+                }
+            }
+
+
+
+        });
+    });
+
+    // 类型切换
+    function TypeChange(self) {
+        let currentOption = $(self).find("option:selected");
+        let currentOptionVal = currentOption.val();
+        let currentOptionText = currentOption.text();
+        if (currentOptionVal === '知识发布') {
+            $('.release-pages .page-header').children().text(currentOptionText);
+            $('.release-pages .details').removeClass('hide');
+            $('.release-pages .describe, .solution').addClass('hide');
+        } else if (currentOptionVal === '问题发布') {
+            $('.release-pages .page-header').children().text(currentOptionText);
+            $('.release-pages .details').addClass('hide');
+            $('.release-pages .describe, .solution').removeClass('hide');
+        }
+    }
+
+    function DeleteDoc() {
+        // 删除按钮，触发删除事件
+        let dataSet = [];
+        let msg = confirm('您确定要删除当前文档吗？');
+        if (msg === true) {
+            let uuid = $('[name=doc_uuid]').val();
+            dataSet.push(uuid);
+            $.ajax({
+                url: '/del_doc/',
+                method: 'post',
+                dataType: 'json',
+                data: {'uuidSet': JSON.stringify(dataSet)},
+                success: function (data) {
+                    if (data.status) {
+                        window.close();
+                    }
+                }
+            })
+        }
+    }
+
+    function BeforeUnload(){
+        let docStatus = $('[name=doc_status]').val();
+        // docStatus 为空时为新增文件
+        if (!docStatus) {
             // 关闭或刷新窗口触发的事件
             let dataSet = [];
             let uuid = $('[name=doc_uuid]').val();
@@ -289,168 +509,187 @@
                 dataType: 'json',
                 data: {'uuidSet': JSON.stringify(dataSet)},
                 success: function (data) {
-                    if (data.status){
+                    if (data.status) {
                         //window.close();
                     }
                 }
             })
-        };
+        }
+    }
 
-        // ============================= wangEditor 富文本控件=============================
-        var E = window.wangEditor;
-        var describe = new E("#edit-toolbar-describe", "#edit-textare-describe");   // 问题描述
-        var solution = new E("#edit-toolbar-solution", "#edit-textare-solution");   // 解决方案
-        var details = new E("#edit-toolbar-details", "#edit-textare-details");      // 详细信息
+    window.addEventListener("beforeunload", BeforeUnload);  // 绑定onbeforeunload事件
 
-        describe.customConfig.uploadImgServer = '/media_upload/';     // 上传地址
-        describe.customConfig.uploadFileName = 'file';          // 自定义filename
-        describe.customConfig.showLinkImg = false;              // 隐藏网络图片功能
-        describe.customConfig.uploadImgHeaders = {'X-CSRFToken':$.cookie('csrftoken')}; // 设置传输时携带token
-        describe.customConfig.uploadImgParams = { doc_uuid : $('[name=doc_uuid]').val()};
-        describe.customConfig.uploadImgHooks = {
-            customInsert: function (insertImg,result,editor) {
-                let url = result.url;
-                insertImg(url)
+    var sendBackMsg;    // 退回原因
+
+    function SubmitForm(){
+        let indicator = $('.file-upload-indicator').attr('title'); // 附件是否上传或存在未上传的，全部上传后控件删除此元素
+        if (indicator === undefined) {
+            //e.preventDefault();     // 阻止提交刷新
+            let ae = document.activeElement;
+            let operation = ae.value;   // 获取当前点击的按钮的value，用于区分不同的操作
+            let uuid = $('[name=doc_uuid]').val();
+            let title = $('[name=title]').val();
+            let classify = $('[name=classify]').val();
+            let issuer = $('[name=issuer]').val();
+            let releaseDate = $('[name=release_date]').val();
+            let issuerDept = $('[name=issuer_dept]').val();
+            let auditor = $('[name=auditor] option:selected').text();
+            let auditorAccount = $('[name=auditor] option:selected').val();
+            let issueType = $('[name=type] option:selected').text();
+            let subject = $('[name=subject]').val();
+            let remarks = $('[name=remarks]').val();
+            let details1 = details.txt.text() ? details.txt.html() : null;
+            let describe1 = describe.txt.text() ? describe.txt.html() : null;
+            let solution1 = solution.txt.text() ? solution.txt.html() : null;
+            // 处理附件信息
+            let aryAtt = $('.kv-zoom-cache .kv-file-download');
+            var aryUrl = Array();
+            if (aryAtt) {
+                for (let i = 0; i < aryAtt.length; i++) {
+                    if (aryUrl.indexOf(aryAtt[i] === -1)) {
+                        let href = $(aryAtt[i]).attr('href');
+                        let name = $(aryAtt[i]).attr('download');
+                        aryUrl.push({'url': href, 'name': name});
+                    }
+                }
             }
-        };
-
-        solution.customConfig.uploadImgServer = '/media_upload/';
-        solution.customConfig.uploadFileName = 'file';
-        solution.customConfig.showLinkImg = false;
-        solution.customConfig.uploadImgHeaders = {'X-CSRFToken':$.cookie('csrftoken')};
-        solution.customConfig.uploadImgParams = { doc_uuid : $('[name=doc_uuid]').val()};
-        solution.customConfig.uploadImgHooks = {
-            customInsert: function (insertImg,result,editor) {
-                let url = result.url;
-                insertImg(url)
-            }
-        };
-
-        details.customConfig.uploadImgServer = '/media_upload/';
-        details.customConfig.uploadFileName = 'file';
-        details.customConfig.showLinkImg = false;
-        details.customConfig.uploadImgHeaders = {'X-CSRFToken':$.cookie('csrftoken')};
-        details.customConfig.uploadImgParams = { doc_uuid : $('[name=doc_uuid]').val()};
-        details.customConfig.uploadImgHooks = {
-            customInsert: function (insertImg,result,editor) {
-                let url = result.url;
-                insertImg(url)
-            }
-        };
-
-        describe.customConfig.zIndex = 0;
-        solution.customConfig.zIndex = 0;
-        details.customConfig.zIndex = 0;
-        describe.create();
-        solution.create();
-        details.create();
-
-        var MutationObserver = MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
-        // 监听的DOM节点
-        // var target = document.querySelector('.w-e-text p');
-        var target = document.getElementsByClassName("w-e-text");
-        // 创建观察者对象
-        var observer = new MutationObserver(function (mutations) { //观察对象的回调函数
-            // 遍历所有MutationRecords
-            mutations.forEach(function (mutation) {
-                // removedNodes[0] 删除节点后记录的数组，mutation.removedNodes[0].tagName删除的节点名称
-                if(mutation.removedNodes[0] != null && mutation.removedNodes[0].tagName === 'IMG'){
-                    // 获取img节点的src属性，并用 / 进行分割
-                    var imgSrc = decodeURI(mutation.removedNodes[0].src);
-                    var fileName = imgSrc.split('/').pop();
-                    // 用ajax发送删除的图片名称
-                    $.ajax({
-                        url: '/del_doc_file/',
-                        method: 'POST',
-                        {#headers: {'Sending-Method': 'MutationObserver'},#}
-                        dataType: 'json',
-                        data: {'fileName': fileName, 'doc_uuid': $('[name=doc_uuid]').val()},
-                        success: function (msg) {
-                            console.log(msg)
+            var data = {
+                'operation': operation,
+                'uuid': uuid,
+                'title': title,
+                'classify': classify,
+                'issuer': issuer,
+                'releaseDate': releaseDate,
+                'auditor': auditor,
+                'auditorAccount': auditorAccount,
+                'issueType': issueType,
+                'issuerDept': issuerDept,
+                'subject':subject,
+                'remarks': remarks,
+                'details1': details1,
+                'describe1': describe1,
+                'solution1': solution1,
+                'aryUrl': JSON.stringify(aryUrl),
+                'returnReason': sendBackMsg,
+            };
+            $.ajax({
+                url: '/save_doc/',
+                method: 'post',
+                dataType: 'json',
+                data: data,
+                success: function (data) {
+                    if (data.status) {
+                        if (operation === 'submit') {
+                            alert('已提交给<"' + auditor + '">进行审核');
                         }
-                    })
+                        // 移除 onbeforeunload 事件绑定
+                        window.removeEventListener("beforeunload", BeforeUnload);
+                        window.close();
+                        // 刷新父窗口
+                        if (window.opener && !window.opener.closed) {
+                            window.parent.opener.location.reload();
+                        }
+
+                    }
                 }
             })
-        });
-		// 监听的变动类型
-        var config = { attributes: true, childList: true, characterData: true ,subtree:true};
-        observer.observe(target[0].firstChild, config);
-        observer.observe(target[1].firstChild, config);
-        observer.observe(target[2].firstChild, config);
-        // ============================= wangEditor end =============================
+        } else {
+            alert('还有未上传的附件，请上传或删除后在继续！');
+            return false;
+        }
+    }
 
-        /*
-        var releaseForm = document.getElementById('release_form');
-        releaseForm.addEventListener('submit', function () {
-            console.log(details.text().html());
-        });*/
-        $(function () {
-            $('#release_form').submit(function (e) {
-                let indicator = $('.file-upload-indicator').attr('title');
-                if (indicator === undefined) {
-                    e.preventDefault();     // 阻止提交刷新
-                    let ae = document.activeElement;
-                    let operation = ae.value;   // 获取当前点击的按钮的value，用于区分不同的操作
-                    let uuid = $('[name=doc_uuid]').val();
-                    let title = $('[name=title]').val();
-                    let classify = $('[name=classify]').val();
-                    let issuer = $('[name=issuer]').val();
-                    let releaseDate = $('[name=release_date]').val();
-                    let issuerDept = $('[name=issuer_dept]').val();
-                    let auditor = $('[name=auditor]').val();
-                    let issueType = $('[name=type] option:selected').text();
-                    let remarks = $('[name=remarks]').val();
-                    let details1 = details.txt.text() ? details.txt.html() : null;
-                    let describe1 = describe.txt.text() ? describe.txt.html() : null;
-                    let solution1 = solution.txt.text() ? solution.txt.html() : null;
-                    // 处理附件信息
-                    let aryAtt = $('.kv-zoom-cache .kv-file-download');
-                    var aryUrl = Array();
-                    if (aryAtt) {
-                        for (let i = 0; i < aryAtt.length; i++) {
-                            if (aryUrl.indexOf(aryAtt[i] === -1)) {
-                                let href = $(aryAtt[i]).attr('href');
-                                let name = $(aryAtt[i]).attr('download');
-                                aryUrl.push({'url': href, 'name': name});
-                            }
+    function ModalBtn(self){
+        let currVal = $(self).val();
+        if (currVal === "cancel") {
+            return false;
+        }else {
+            let text = $('.modal-content').find('textarea');
+            if (text.val().length === 0){
+                $('.modal-content').find('textarea').focus();
+                $('[value=confirm]').removeAttr("data-dismiss");
+            }else {
+                sendBackMsg = text.val();
+                SubmitForm();   // 调用SubmitForm方法提交表单
+                return true;
+            }
+        }
+    }
+
+    $(function () {
+        $('#release_form').submit(function (e) {
+            // 表单绑定submit方法，否则无法触发字段中的 required 验证
+            e.preventDefault();     // 阻止提交刷新
+            SubmitForm();   // 调用SubmitForm方法提交表单
+            /*
+            let indicator = $('.file-upload-indicator').attr('title');
+            if (indicator === undefined) {
+                e.preventDefault();     // 阻止提交刷新
+                let ae = document.activeElement;
+                let operation = ae.value;   // 获取当前点击的按钮的value，用于区分不同的操作
+                let uuid = $('[name=doc_uuid]').val();
+                let title = $('[name=title]').val();
+                let classify = $('[name=classify]').val();
+                let issuer = $('[name=issuer]').val();
+                let releaseDate = $('[name=release_date]').val();
+                let issuerDept = $('[name=issuer_dept]').val();
+                let auditor = $('[name=auditor] option:selected').text();
+                let auditorAccount = $('[name=auditor] option:selected').val();
+                let issueType = $('[name=type] option:selected').text();
+                let remarks = $('[name=remarks]').val();
+                let details1 = details.txt.text() ? details.txt.html() : null;
+                let describe1 = describe.txt.text() ? describe.txt.html() : null;
+                let solution1 = solution.txt.text() ? solution.txt.html() : null;
+                // 处理附件信息
+                let aryAtt = $('.kv-zoom-cache .kv-file-download');
+                var aryUrl = Array();
+                if (aryAtt) {
+                    for (let i = 0; i < aryAtt.length; i++) {
+                        if (aryUrl.indexOf(aryAtt[i] === -1)) {
+                            let href = $(aryAtt[i]).attr('href');
+                            let name = $(aryAtt[i]).attr('download');
+                            aryUrl.push({'url': href, 'name': name});
                         }
                     }
-                    var data = {
-                        'operation':operation,
-                        'uuid': uuid,
-                        'title': title,
-                        'classify': classify,
-                        'issuer': issuer,
-                        'releaseDate': releaseDate,
-                        'auditor': auditor,
-                        'issueType': issueType,
-                        'issuerDept': issuerDept,
-                        'remarks': remarks,
-                        'details1': details1,
-                        'describe1': describe1,
-                        'solution1': solution1,
-                        'aryUrl': JSON.stringify(aryUrl)
-                    };
-                    $.ajax({
-                        url: '/save_doc/',
-                        method: 'post',
-                        dataType: 'json',
-                        data: data,
-                        success: function (data) {
-                            if (data.status) {
-                                if (operation === 'submit'){
-                                    alert('已提交给<"'+ auditor +'">进行审核');
-                                }
-                                window.close();
-                            }
-                        }
-                    })
-                }else {
-                    alert('还有未上传的附件，请上传或删除后在继续！');
-                    return false;
                 }
-            })
+                var data = {
+                    'operation': operation,
+                    'uuid': uuid,
+                    'title': title,
+                    'classify': classify,
+                    'issuer': issuer,
+                    'releaseDate': releaseDate,
+                    'auditor': auditor,
+                    'auditorAccount': auditorAccount,
+                    'issueType': issueType,
+                    'issuerDept': issuerDept,
+                    'remarks': remarks,
+                    'details1': details1,
+                    'describe1': describe1,
+                    'solution1': solution1,
+                    'aryUrl': JSON.stringify(aryUrl),
+                    'returnReason': sendBackMsg,
+                };
+                $.ajax({
+                    url: '/save_doc/',
+                    method: 'post',
+                    dataType: 'json',
+                    data: data,
+                    success: function (data) {
+                        if (data.status) {
+                            if (operation === 'submit') {
+                                alert('已提交给<"' + auditor + '">进行审核');
+                            }
+                            window.close();
+                        }
+                    }
+                })
+            } else {
+                alert('还有未上传的附件，请上传或删除后在继续！');
+                return false;
+            }*/
         })
-    </script>
+    })
+</script>
 </body>
 </html>

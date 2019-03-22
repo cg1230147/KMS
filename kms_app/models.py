@@ -25,10 +25,11 @@ class KmsDocInfo(models.Model):
     issuer_dept = models.CharField(max_length=16, verbose_name='发布部门', default=None)
     classify_name = models.CharField(max_length=16, verbose_name='知识分类', default=None)
     release_date = models.DateField(auto_now_add=True, verbose_name='发布时间')
-    auditor = models.CharField(max_length=16, verbose_name='审核人', default=None)
+    auditor = models.CharField(max_length=16, verbose_name='审核人', default=None, db_index=True)
     auditor_account = models.CharField(max_length=16, verbose_name='审核人账户', default=None)
-    remarks = models.TextField(null=True,blank=True, verbose_name='备注')
     issue_type = models.CharField(max_length=16, verbose_name='发布类型', default=None)
+    subject = models.CharField(max_length=32, verbose_name='主题词', default=None, db_index=True)
+    remarks = models.TextField(null=True, blank=True, verbose_name='备注')
     del_status = models.IntegerField(verbose_name='删除状态', default=0)        # 0 未删除，1 删除
     doc_status = models.CharField(max_length=8, verbose_name='文档状态')        # 暂存、审核、发布、退回
     # release_status = models.IntegerField(verbose_name='发布状态', default=0)    # 0 未发布，1 发布

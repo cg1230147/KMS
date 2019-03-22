@@ -19,14 +19,12 @@
         .page-head{
             width: 100%;
             height: 50px;
-            {#background-color: #002140;#}
             background-color: #286090;
             position: fixed;
             z-index: 10;
         }
         .page-head .head-content .logo{
             height: 50px;
-            {#background-color: #002140;#}
             color: white;
             line-height: 50px;
             margin-left: 5%;
@@ -62,7 +60,9 @@
             color: white;
         } a:visited{
             color: white;}
-
+        .page-head .head-content .account a{
+            color: white;
+        }
         .page-body{
             /*height: 100%;*/
             height: 92%;
@@ -76,7 +76,7 @@
             position: absolute;
             margin-top: 1px;
             box-shadow: 2px 0 6px rgba(0,21,41,.50);
-            {#background-color: #001631;#}
+            /*background-color: #001631;*/
         }
         .page-body .body-left .home{
             color: white;
@@ -84,15 +84,11 @@
             line-height: 44px;
             text-align: center;
             border-radius: 3px;
-            {#background-color: #003152;#}
             background-color: #286090;
 
         }
         .page-body .body-left .home-classify ul li{
             padding-left: 100px;
-            {#height: 30px;#}
-            {#color: #dddddd;#}
-            {#line-height: 30px;#}
             cursor: pointer;
         }
         .page-body .body-left .home-classify li:hover{
@@ -100,7 +96,6 @@
             color: #286090;
         }
         .page-body .body-left .home-classify .active{
-            {#background-color: #001021;#}
             background-color: #337ab7;
             color: white;
         }
@@ -145,6 +140,7 @@
         }
         .page-body .body-right table tr th {
             background-color: #CCE8EB;
+            /*background-color: #337ab76e;*/
             width: 100px;
         }
 
@@ -158,6 +154,10 @@
             background: #f1f1f1;
         }
 
+        .body-right .content a, a:link, a:visited {
+            color: black;
+            padding-left: 5px;
+        }
     </style>
     {% block style %}{% endblock %}
 </head>
@@ -167,15 +167,15 @@
         <div class="head-content">
             <div class="logo"><p style="font-size: 18px">KMS知识管理系统</p></div>
             {% block page-head-nav-bar %}
-            <div class="nav-bar">
+            <nav class="nav-bar">
                 <ul>
-                    <li><a href="{% url 'index' %}">首&nbsp页</a></li>
+                    <li><a href="{% url 'index' %}">首&nbsp;页</a></li>
                     <li><a href="{% url 'classify' %}">知识分类</a></li>
                     {% if '管理员' in permission %}
                         <li><a href="{% url 'manage' %}">后台管理</a></li>
                     {% endif %}
                 </ul>
-            </div>
+            </nav>
             {% endblock %}
             <div class="account">
                 <span>您好:</span>
@@ -201,6 +201,13 @@
     <div class="page-footer">
         {% block page-footer %}{% endblock %}
     </div>
+
+    <script src="/static/plugins/js/jquery-3.3.1.js" type="text/javascript"></script>
+    <!-- table表格自由拖动插件 start-->
+    <script src="/static/plugins/js/colResizable-1.6.min.js" type="text/javascript"></script>
+    <script src="/static/plugins/js/bootstrap-table.js" type="text/javascript"></script>
+    <script src="/static/plugins/js/bootstrap-table-resizable.js" type="text/javascript"></script>
+    <!-- table表格自由拖动插件 end -->
     {% block script %}{% endblock %}
 </body>
 </html>

@@ -4,15 +4,135 @@
     <div class="home">个人中心</div>
 {% endblock %}
 
+{% block style %}
+    <style>
+        .error{
+            color: #a94442;
+            position: absolute;
+            right: 16px;
+        }
+    </style>
+{% endblock %}
+
 {% block page_body_left_classify %}
     <div class="home-classify">
         <ul class="list-group">
-            <li class="active list-group-item">个人信息</li>
-            <li class="list-group-item">密码修改</li>
+            <li class="list-group-item active" handle="personal-info" onclick="GetNavCenterData(this)">个人信息</li>
+            <li class="list-group-item" handle="change-pwd">修改密码</li>
         </ul>
     </div>
 {% endblock %}
 
+{% block page_body_right_head %}
+    <div style="padding: 1px 0 1px 5px;border-bottom: 1px solid #dddddd">
+        <button class="btn btn-default" type="button" onclick="SubmitUserInfo();">确定</button>
+    </div>
+{% endblock %}
 
+{% block page_body_right_content %}
+    <div class="content" style="padding: 1% 1% 0 5px">
+        <div id="personal-info">
+            <div class="form-group">
+                <label for="oldInputEmail">邮箱</label>
+                <input type="email" name="email" class="form-control" id="oldInputEmail" placeholder="邮箱">
+            </div>
+            <div class="form-group">
+                <label for="newInputPhoneNumber">手机号</label>
+                <input type="text" name="phone_number" class="form-control" id="newInputPhoneNumber" placeholder="手机号">
+            </div>
+        </div>
+        <div id="change-pwd" class="hide">
+            <div class="form-group">
+                <label for="oldInputPassword">旧密码</label>
+                <input type="password" name="oldPassword" class="form-control" id="oldInputPassword" placeholder="旧密码">
+                <span class="error hide">输入的旧密码错误</span>
+            </div>
+            <div class="form-group">
+                <label for="newInputPassword1">新密码</label>
+                <input type="password" name="newPassword" class="form-control" id="newInputPassword" placeholder="新密码">
+                <span class="error hide">新密码不能为空</span>
+            </div>
+        </div>
+    </div>
+{% endblock %}
 
 {% block page-footer %}{% endblock %}
+
+{% block script %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
+        });
+        $(function () {
+            $('.list-group-item').click(function () {
+                $(this).addClass('active').siblings().removeClass('active');
+            });
+
+            $('.list-group .list-group-item').click(function () {
+                let handle = $(this).attr('handle');
+                $('#' + handle).removeClass('hide').siblings().addClass('hide');
+            });
+
+        });
+        function GetNavCenterData(self) {
+            let handle = $(self).attr('handle');
+            $.ajax({
+                url: '/user_info/',
+                method: 'get',
+                dataType: 'json',
+                data: {'handle': handle},
+                success: function (data) {
+                    if (data.status === true){
+                        if (handle === 'personal-info') {
+                            $('[name=email]').val(data.query_data[0]['email']);
+                            $('[name=phone_number]').val(data.query_data[0]['phone_number']);
+                        }
+                    }
+
+                }
+            })
+        }
+
+        function SubmitUserInfo() {
+            // 提交修改信息
+            let handle = $('.list-group .active').attr('handle');
+            if (handle === 'personal-info' ) {
+                let email = $('[name=email]').val();
+                let phoneNumber = $('[name=phone_number]').val();
+                var data = {'handle':handle,'email': email, 'phoneNumber':phoneNumber}
+
+            }else if (handle === 'change-pwd') {
+                let oldPassword = $('[name=oldPassword]').val();
+                let newPassword = $('[name=newPassword]').val();
+                if (oldPassword.length === 0){
+                    $('#oldInputPassword').next().removeClass('hide').text('旧密码不能为空');
+                    return false;
+                } else if (newPassword.length === 0){
+                    $('#oldInputPassword').next().addClass('hide');
+                    $('#newInputPassword').next().removeClass('hide');
+                    return false;
+                }
+                $('#change-pwd').find('.error').addClass('hide');
+                var data = {'handle':handle, 'oldPassword':oldPassword,'newPassword':newPassword}
+            }
+            $.ajax({
+                url: '/user_info/',
+                method: 'post',
+                dataType: 'json',
+                data: data,
+                success: function (data) {
+                    if (data.status === true){
+                        alert('修改成功！');
+                        if (handle === 'change-pwd'){
+                            $('#change-pwd').find('input').val('')
+                        }
+                    }else if (data.status === false && handle === 'change-pwd') {
+                        $('#oldInputPassword').next().removeClass('hide')
+                    }
+                }
+            })
+        }
+        // 初始预览个人信息
+        GetNavCenterData('[handle=personal-info]');
+    </script>
+{% endblock %}

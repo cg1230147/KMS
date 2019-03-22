@@ -18,7 +18,10 @@ from django.urls import path,re_path
 from kms_app import views
 from django.conf.urls.static import static
 from KMS import settings
+import os
 import re
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +32,7 @@ urlpatterns = [
     re_path(r'query_index_data/$', views.query_index_data, name='query_index_data'),
     re_path(r'logout/$', views.logout, name='logout'),
     re_path(r'classify/', views.classify, name='classify'),
+    re_path(r'search/', views.search, name='search'),
     # release
     re_path(r'release/$', views.release, name='release'),
     re_path(r'media_upload/', views.media_upload, name='media_upload'),
@@ -41,6 +45,7 @@ urlpatterns = [
     re_path(r'view_form', views.view_form, name='view_form'),
     # center
     re_path(r'center/$', views.center, name='center'),
+    re_path(r'user_info/', views.user_info, name='user_info'),
     # manage
     re_path(r'manage/$', views.manage, name='manage'),
     re_path(r'add/', views.add, name='add'),
@@ -53,3 +58,5 @@ urlpatterns = [
 ]
 # 上传文件url路径
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+

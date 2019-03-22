@@ -12,27 +12,27 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="recipient-name" class="control-label"><span class="mark-required">*</span>用户名:</label>
-                        <input type="text" name="username" id="username" class="form-control">
+                        <input type="text" name="username" id="username" autocomplete="off" class="form-control">
                         <span class="error hide">用户名不能为空</span>
                     </div>
                     <div class="form-group">
                         <label for="recipient-name" class="control-label"><span class="mark-required">*</span>显示名称:</label>
-                        <input type="text" name="show-username" id="show-username" class="form-control">
+                        <input type="text" name="show-username" id="show-username" autocomplete="off" class="form-control">
                         <span class="error hide">显示名称不能为空</span>
                     </div>
                     <div class="form-group">
                         <label for="message-text" class="control-label"><span class="mark-required">*</span>密码:</label>
-                        <input type="password" name="password" id="password" class="form-control">
+                        <input type="password" name="password" id="password" autocomplete="new-password" class="form-control">
                         <span class="error hide">密码不能为空</span>
                     </div>
                     <div class="form-group">
                         <label for="recipient-name" class="control-label">邮箱:</label>
-                        <input type="email" name="email" id="email" class="form-control">
+                        <input type="email" name="email" id="email" autocomplete="off" class="form-control">
                         <span class="error hide">邮箱不能为空</span>
                     </div>
                     <div class="form-group">
                         <label for="recipient-name" class="control-label">手机号:</label>
-                        <input type="text" name="phone-number" id="phone-number" class="form-control">
+                        <input type="text" name="phone-number" id="phone-number" autocomplete="off" class="form-control">
                         <span class="error hide">手机号不能为空</span>
                     </div>
                     <div class="form-group">
@@ -43,7 +43,7 @@
                         <span class="error hide">部门不能为空</span>
                     </div>
                     <div class="form-group">
-                        <label for="reg-permission" class="control-label">权限:</label>
+                        <label for="reg-permission" class="control-label"><span class="mark-required">*</span>权限:</label>
                         <select title="请选择权限" name="reg-permission" id="reg-permission" class="form-control selectpicker" multiple>
                         </select>
                         <span class="error hide">权限不能为空</span>
@@ -193,7 +193,7 @@
               </div>
               <div class="form-group">
                   <label for="filter_conditions" class="control-label">过滤条件:</label>
-                  <input type="text" name="filter-conditions" id="filter-conditions" class="form-control">
+                  <input type="text" name="filter-conditions" id="filter-conditions" class="form-control" style="font-family: none;">
                   <span class="error hide">请填写过滤条件</span>
               </div>
               <div class="modal-footer footer-btn" >

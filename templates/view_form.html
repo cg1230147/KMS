@@ -9,140 +9,152 @@
     <link href="/static/css/formstyle.css" type="text/css" rel="stylesheet">
 </head>
 <body>
-    <div class="release-pages">
-        <div class="page-header" style="text-align: center;">
-            <h1>{{ data.issue_type }}</h1>
-        </div>
-        <div class="page-body">
-            <form id="release_form">
-                <table width="100%" cellspacing="0" cellpadding="0">
-                    <tr>
-                        <td class="td-name">标题</td>
-                        <td colspan="5">
-                            <input readonly type="text" id="title" name="title" value="{{ data.title }}"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="td-name" style="width: 10%">分类</td>
-                        <td style="width: 24%;position: relative">
-                            <input readonly type="text" name="classify" id="classify" value="{{ data.classify_name }}"/>
-                        </td>
-                        <td class="td-name" style="width: 10%">发布人</td>
-                        <td style="width: 23%">
-                            <input readonly type="text" name="issuer" value="{{ data.issuer }}"/>
-                        </td>
-                        <td class="td-name" style="width: 10%">发布日期</td>
-                        <td style="width: 23%">
-                            <input readonly class="date" name="release_date" type="date" value="{{ data.release_date }}"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="td-name" style="width: 10%">发布部门</td>
-                        <td style="width: 23%">
-                            <input readonly type="text" name="issuer_dept" value="{{ data.issuer_dept }}"/>
-                        </td>
-                        <td class="td-name" style="width: 10%">审核人</td>
-                        <td style="width: 24%">
-                            <input readonly name="auditor" value="{{ data.auditor }}">
-                        </td>
-                        <td class="td-name" style="width: 10%">发布类型</td>
-                        <td>
-                            <input readonly id="type-select" name="type" value="{{ data.issue_type }}">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="td-name">备注</td>
-                        <td colspan="6">
-                            <textarea readonly class="remark" name="remarks">{{ data.remarks }}</textarea>
-                        </td>
-                    </tr>
-                    {% if data.describe %}
+<div class="release-pages">
+    <div class="page-header" style="text-align: center;">
+        <h1>{{ data.issue_type }}</h1>
+    </div>
+    <div class="page-body">
+        <form id="release_form">
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td class="td-name">标题</td>
+                    <td colspan="5">
+                        <input readonly type="text" id="title" name="title" value="{{ data.title }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="td-name" style="width: 10%">分类</td>
+                    <td style="width: 24%;position: relative">
+                        <input readonly type="text" name="classify" id="classify" value="{{ data.classify_name }}"/>
+                    </td>
+                    <td class="td-name" style="width: 10%">发布人</td>
+                    <td style="width: 23%">
+                        <input readonly type="text" name="issuer" value="{{ data.issuer }}"/>
+                    </td>
+                    <td class="td-name" style="width: 10%">发布日期</td>
+                    <td style="width: 23%">
+                        <input readonly class="date" name="release_date" type="date" value="{{ data.release_date }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="td-name" style="width: 10%">发布部门</td>
+                    <td style="width: 23%">
+                        <input readonly type="text" name="issuer_dept" value="{{ data.issuer_dept }}"/>
+                    </td>
+                    <td class="td-name" style="width: 10%">审核人</td>
+                    <td style="width: 24%">
+                        <input readonly name="auditor" value="{{ data.auditor }}">
+                    </td>
+                    <td class="td-name" style="width: 10%">发布类型</td>
+                    <td>
+                        <input readonly id="type-select" name="type" value="{{ data.issue_type }}">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="td-name">主题词</td>
+                    <td colspan="5">
+                        <input readonly type="text" id="subject" name="subject" value="{{ data.subject }}" required
+                               oninvalid="setCustomValidity('请填主题词');" oninput="setCustomValidity('');"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="td-name">备注</td>
+                    <td colspan="6">
+                        <textarea readonly class="remark" name="remarks">{{ data.remarks }}</textarea>
+                    </td>
+                </tr>
+                {% if data.describe %}
                     <tr class="describe">
                         <td class="td-name">问题描述</td>
                         <td colspan="5">
                             {% autoescape off %}
-                            <div>{{ data.describe }}</div>
+                                <div>{{ data.describe }}</div>
                             {% endautoescape %}
                         </td>
                     </tr>
-                    {% endif %}
-                    {% if data.solution %}
+                {% endif %}
+                {% if data.solution %}
                     <tr class="solution">
                         <td class="td-name">解决方案</td>
                         <td colspan="5">
                             {% autoescape off %}
-                            <div>{{ data.solution }}</div>
+                                <div>{{ data.solution }}</div>
                             {% endautoescape %}
                         </td>
                     </tr>
-                    {% endif %}
-                    {% if data.details %}
+                {% endif %}
+                {% if data.details %}
                     <tr class="details">
                         <td class="td-name">详细信息</td>
                         <td colspan="5">
                             {% autoescape off %}
-                            <div>{{ data.details }}</div>
+                                <div>{{ data.details }}</div>
                             {% endautoescape %}
                         </td>
                     </tr>
-                    {% endif %}
-                    <tr>
-                        <td class="td-name">附件信息</td>
-                        <td colspan="6">
-                            <input disabled id="upload-file" type="file" class="file-loading" name="attachment" multiple style="padding-top: 7px"/>
-                        </td>
-                    </tr>
-                </table>
-                <div class="btn-group" style="margin-left: 35%;padding:20px 0 50px 0"></div>
-            </form>
-        </div>
+                {% endif %}
+                <tr>
+                    <td class="td-name">附件信息</td>
+                    <td colspan="6">
+                        <input disabled id="upload-file" type="file" class="file-loading" name="attachment" multiple
+                               style="padding-top: 7px"/>
+                    </td>
+                </tr>
+            </table>
+            <div class="btn-group" style="margin-left: 35%;padding:20px 0 50px 0"></div>
+        </form>
+    </div>
 
-    </div>
-    <div>
-        <input type="text" name="doc_uuid" value="{{ data.uuid }}" hidden>
-    </div>
-    <script src="/static/plugins/js/jquery-3.3.1.js"></script>
-    <script src="/static/plugins/js/wangEditor.js"></script>
-    <script src="/static/plugins/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
-    <script src="/static/plugins/js/jquery.cookie.js"></script>
-    <script src="/static/plugins/bootstrap-fileinput-master/js/fileinput.js"></script>
-    <script src="/static/plugins/bootstrap-fileinput-master/js/locales/zh.js"></script>
-    <script>
-        // 禁用浏览器回退操作
+</div>
+<div>
+    <input type="text" name="doc_uuid" value="{{ data.uuid }}" hidden>
+    <input type="text" name="doc_status" value="{{ data.doc_status }}" hidden>
+</div>
+<script src="/static/plugins/js/jquery-3.3.1.js"></script>
+<script src="/static/plugins/js/wangEditor.js"></script>
+<script src="/static/plugins/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+<script src="/static/plugins/js/jquery.cookie.js"></script>
+<script src="/static/plugins/bootstrap-fileinput-master/js/fileinput.js"></script>
+<script src="/static/plugins/bootstrap-fileinput-master/js/locales/zh.js"></script>
+<script>
+    // 禁用浏览器回退操作
+    history.pushState(null, null, document.URL);
+    window.addEventListener('popstate', function () {
         history.pushState(null, null, document.URL);
-        window.addEventListener('popstate', function () {
-            history.pushState(null, null, document.URL);
-        });
+    });
 
-        $(function () {
-            // bootstarp fileinput 插件
-            $('#upload-file').fileinput({
-                language: 'zh',     // 设置语言，需要引入locales/zh.js文件
-                showPreview: true,  // 展示预览
-                showUpload: false,   // 是否显示上传按钮
-                showCaption: true,  // 是否显示文字描述
-                showClose: false,   // 隐藏右上角×
-                uploadAsync: true, // 是否异步上传
-                showRemove: false,  // 是否显示文件删除/清除按钮
-                initialPreviewShowDelete: false, // 预览中的删除按钮
-                layoutTemplates:{
-                    actionDelete: '',   // 隐藏缩略图中的删除按钮
-                    actionUpload: '',   // 隐藏缩略图中的上传按钮
-                },
-                {% autoescape off %}
-                initialPreview :{{ data.initialPreview }},
+    $(function () {
+        // bootstarp fileinput 插件
+        $('#upload-file').fileinput({
+            language: 'zh',     // 设置语言，需要引入locales/zh.js文件
+            uploadUrl: '/',
+            dropZoneTitle: '当前文件没有附件',
+            showPreview: true,  // 展示预览
+            showUpload: false,   // 是否显示上传按钮
+            showCaption: true,  // 是否显示文字描述
+            showClose: false,   // 隐藏右上角×
+            uploadAsync: true, // 是否异步上传
+            showRemove: false,  // 是否显示文件删除/清除按钮
+            initialPreviewShowDelete: false, // 预览中的删除按钮
+            layoutTemplates: {
+                actionDelete: '',   // 隐藏缩略图中的删除按钮
+                actionUpload: '',   // 隐藏缩略图中的上传按钮
+            },
+
+            {% autoescape off %}
+                initialPreview:{{ data.initialPreview }},
                 initialPreviewConfig: {{ data.initialPreviewConfig }},
-                {% endautoescape %}
-            });
-
-            /* 自定义 fileinput插件 功能及样式 */
-            $('.input-group').addClass('hide'); //  隐藏选择新文件功能
-            $('.file-footer-buttons').children('button').removeAttr('disabled').click(function () {
-                // 初始化input标签设置了disabled属性，如果继续使用预览中的按钮时则必须单独移除 disabled 属性。
-                // 并为btn绑定click事件，查看详细信息时重新设置textarea的长宽
-                $('#kvFileinputModal').find('textarea').css({"width": "100%", "height": "100%", "min-height": "480px"})
-            })
+            {% endautoescape %}
         });
-    </script>
+
+        /* 自定义 fileinput插件 功能及样式 */
+        $('.input-group').addClass('hide'); //  隐藏选择新文件功能
+        $('.file-footer-buttons').children('button').removeAttr('disabled').click(function () {
+            // 初始化input标签设置了disabled属性，如果继续使用预览中的按钮时则必须单独移除 disabled 属性。
+            // 并为btn绑定click事件，查看详细信息时重新设置textarea的长宽
+            $('#kvFileinputModal').find('textarea').css({"width": "100%", "height": "100%", "min-height": "480px"})
+        })
+    });
+</script>
 </body>
 </html>
