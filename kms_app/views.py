@@ -631,19 +631,6 @@ def view_form(request):
         return render(request, 'view_form.html', {'data': final_doc})
 
 
-"""
-def del_doc_att(request):
-    key = request.POST.get('key', None)
-    doc_uuid = request.POST.get('doc_uuid', None)
-    print(key,doc_uuid)
-    file_dir = os.path.join(
-        os.path.join(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files'), doc_uuid), key)
-    if os.path.exists(file_dir):
-        os.remove(file_dir)
-    return HttpResponse(json.dumps({'status': True}))
-"""
-
-
 def center(request):
     """个人中心"""
     show_name = request.session['show_name']
