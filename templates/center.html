@@ -11,6 +11,15 @@
             position: absolute;
             right: 16px;
         }
+        .loading{
+            width: 100%;
+            height: 85%;
+            position: absolute;
+            background: url(/static/img/loding.gif) no-repeat;
+            background-position: center;
+            background-size: 40px 40px;
+            display: none;
+        }
     </style>
 {% endblock %}
 
@@ -30,6 +39,7 @@
 {% endblock %}
 
 {% block page_body_right_content %}
+    <div class="loading"></div>
     <div class="content" style="padding: 1% 1% 0 5px">
         <div id="personal-info">
             <div class="form-group">
@@ -75,6 +85,7 @@
 
         });
         function GetNavCenterData(self) {
+            $('.loading').show();
             let handle = $(self).attr('handle');
             $.ajax({
                 url: '/user_info/',
@@ -86,6 +97,7 @@
                         if (handle === 'personal-info') {
                             $('[name=email]').val(data.query_data[0]['email']);
                             $('[name=phone_number]').val(data.query_data[0]['phone_number']);
+                            $('.loading').hide()
                         }
                     }
 
