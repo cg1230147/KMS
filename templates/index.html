@@ -15,7 +15,7 @@
             display:none;
             height: 30px;
             line-height: 30px;
-            border-radius: 16px;
+            border-radius: 4px;
         }
     </style>
 {% endblock %}
@@ -156,12 +156,11 @@
                             tbody.append("<tr></tr>");
                             tbody.children('tr').last().append(td);
                         }
-
+                        // 在审核失败中鼠标悬浮到标题上显示退回原因提示框
                         if (navName === "审核失败"){
                             $('#table a').mouseover(function (e) {
-                                console.log(e.pageX,e.pageY)
                                 let returnReason = $(e.currentTarget).parent().nextAll('#return_reason').text();
-                                $('body').append('<div id="tooltip" display="none">' + returnReason + '</div>');
+                                $('body').append('<div id="tooltip"><span>退回原因：</span><span>' + returnReason + '</span></div>');
                                 $('#tooltip').css({'left': (e.pageX + 12 + 'px'), 'top': (e.pageY + 15 + 'px')}).show();
                             }).mouseout(function () {
                                 $('#tooltip').remove();

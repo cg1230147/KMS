@@ -83,7 +83,7 @@
 
 {% block page_body_right_content %}
 {#    <div class="manage-content" style="margin-left:5px;border-top: 1px solid #ddd;overflow-y: scroll;width: 100%;height: 88%;">#}
-    <div class="manage-content" style="padding-left:5px;width: 100%;height: 87%;overflow-y: scroll;margin-top: 1px;border-top: 1px solid #dddddd">
+    <div class="manage-content" style="padding-left: 5px;width: 100%;height: 87%;overflow-y: scroll;margin-top: 1px;border-top: 1px solid #dddddd">
         <div class="user-manage">
             <table id="user-table">
                 <thead>
@@ -163,11 +163,11 @@
     <script src="/static/js/treeview.js" type="text/javascript"></script>
     <script src="/static/plugins/js/bootstrap-select.min.js"></script>
     <script src="/static/plugins/js/defaults-zh_CN.min.js"></script>
-    <script src="/static/js/settings.js"></script>
     <script>
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
         })
+
         $(function () {
             jQuery.extend({
                 showAddPanel:function () {
@@ -355,8 +355,9 @@
                                     let firstEle = sel.children().first();
                                     sel.empty().append(firstEle);
                                     for (let i=0;i<data.query_data.length;i++){
-                                        let option = "<option value="+data.query_data[i].department_level+" supCorrelateId="+data.query_data[i].superior_correlate_id+">"
-                                                    + data.query_data[i].department_level+"</option>";
+                                        let option = "<option value="+data.query_data[i].department_level +
+                                                    " supCorrelateId="+data.query_data[i].superior_correlate_id+">" +
+                                                    data.query_data[i].department_level+"</option>";
                                         sel.append(option)
                                     }
                                 }
@@ -398,7 +399,6 @@
                         $('#panel-department .modal-footer > button').text("修改").attr('onclick', 'EditDepartment();');
 
                      } else if (handle == 'panel-dept-level'){
-
                         let allDeptLevel = $('.dept-level-manage [name=department-level]'); // 获取所有部门级别
                         let correlate = $('#superior-correlate');
                         let supid = checked.parent().nextAll('[name=department-level]').attr('supid');  // 上级关联ID
@@ -555,6 +555,185 @@
             });
 
         });
+
+        function GetUserPagingData(page) {
+            // 跳转页面
+            GetNavClassifyData("[handle=panel-user]", page)
+        }
+
+        // 查询动态生成导航分类数据
+        function GetNavClassifyData(self,page) {
+            let handle = $(self).attr('handle');
+            $.ajax({
+                url: /query/,
+                method: 'post',
+                dataType: 'json',
+                data: {'handle': handle, 'page': page},
+                success: function (data) {
+                    if(data.status === true){
+                        if (handle == 'panel-user'){
+                            $('#paging').removeClass('hide').prev().css('height','87%');  // 显示分页元素;
+                            // 生成用户列表
+                            let tbody = $('.user-manage tbody');
+                            tbody.empty();
+                            for(let i=0;i<data.query_data.length;i++) {
+                                let td = "<td style='width: 5%'><input type='checkbox'/></td>" +
+                                    "<td style='width: 5%'>" + (i + 1) + "</td>" +
+                                    "<td name='uid' hidden>" + data.query_data[i].uid + "</td>" +
+                                    "<td name='username'>" + data.query_data[i].username + "</td>" +
+                                    "<td name='show_name'>" + data.query_data[i].show_name + "</td>" +
+                                    "<td name='password' hidden>" + data.query_data[i].password + "</td>" +
+                                    "<td name='phone_number'>" + data.query_data[i].phone_number + "</td>" +
+                                    "<td name='email'>" + data.query_data[i].email + "</td>" +
+                                    "<td name='dept-name' deptid='"+data.query_data[i].groups__id+"'>" +
+                                     data.query_data[i].groups__dept_name + "</td>"+
+                                    "<td name='permissions' permissionsID='"+data.query_data[i].permissionsID+"'>" +
+                                     data.query_data[i].permissions + "</td>";
+                                tbody.append("<tr></tr>");
+                                tbody.children('tr').last().append(td);
+                            }
+                            // ===============================用户分页 start==================================
+                            $('.pagination').empty();
+                            //上一页
+                            if (data.paging_param.has_per_page) {
+                                let perPage = '<li><a href="#" aria-label="Previous" onclick="GetUserPagingData('
+                                    + data.paging_param.per_page_number + ')"><span aria-hidden="true">&laquo;</span></a></li>';
+                                $('.pagination').append(perPage)
+                            } else {
+                                let perPage = '<li><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>';
+                                $('.pagination').append(perPage)
+                            }
+                            // 页码
+                            for (let i = 0; i < data.paging_param.curr_show_pages.length; i++) {
+                                if (data.paging_param.current_page === data.paging_param.curr_show_pages[i]) {
+                                    let page = '<li><a href="#" style="background-color: #eeeeee;" onclick="GetSearchPagingData(' +
+                                        data.paging_param.curr_show_pages[i] + ');">' + data.paging_param.curr_show_pages[i] + '</a></li>';
+                                    $('.pagination').append(page)
+                                } else {
+                                    let page = '<li><a href="#" onclick="GetUserPagingData(' +
+                                        data.paging_param.curr_show_pages[i] + ');">' + data.paging_param.curr_show_pages[i] + '</a></li>';
+                                    $('.pagination').append(page)
+                                }
+                            }
+
+                            // 下一页
+                            if (data.paging_param.has_next_page) {
+                                let nextPage = '<li><a href="#" aria-label="Next" onclick="GetUserPagingData(' +
+                                    data.paging_param.next_page_number + ')"><span aria-hidden="true">&raquo;</span></a></li>';
+                                $('.pagination').append(nextPage)
+                            } else {
+                                let nextPage = '<li><a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>';
+                                $('.pagination').append(nextPage)
+                            }
+                            $('.pagination').append('<li style="position: absolute;align-self: center;right: 10px;">总页数:' +
+                                data.paging_param.total_page + '页</li>')
+                            // ===============================分页 end==================================
+
+                        } else if (handle == 'panel-department'){
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
+                            // 生成部门树
+                            $('#dept-tree').empty().createdTree(data.query_data);
+                            $.fn.unfoldFold();
+                            let isMac = /macintosh|mac os/.test(navigator.userAgent.toLowerCase());
+                            if (isMac) {
+                                $('.department-manage .node-choice').css('bottom', '3px');
+                            }
+
+                        } else if (handle == 'panel-dept-level'){
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
+                            // 生成部门列表
+                            let tbody = $('.dept-level-manage tbody');
+                            // 每次清空在添加内容
+                            tbody.empty();
+                            for(let i=0;i<data.query_data.length;i++){
+                                let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                        "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                        "<td name='id' hidden>"+data.query_data[i].level_id+"</td>"+
+                                        "<td name='department-level' supid='"+data.query_data[i].superior_correlate_id+"'>"+
+                                        data.query_data[i].department_level+"</td>";
+                                tbody.append("<tr></tr>");
+                                tbody.children('tr').last().append(td);
+                            }
+                        } else if (handle == 'panel-permission'){
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
+                            // 生成权限列表
+                            let tbody = $('.permission-manage tbody');
+                            tbody.empty();
+                            for(let i=0;i<data.query_data.length;i++){
+                                    let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                            "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                            "<td name='id' hidden>"+data.query_data[i].permitId+"</td>"+
+                                            "<td name='permission-name'>"+
+                                            data.query_data[i].permitName+"</td>";
+                                tbody.append("<tr></tr>");
+                                tbody.children('tr').last().append(td);
+                            }
+
+                        } else if (handle == 'panel-knowledge') {
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
+                            $('#knowledge-tree').empty();
+                            if ($('#knowledge-tree').children().length === 0) {
+                                $('#knowledge-tree').append('<ul class="root-node"></ul>')
+                            }
+                            for (let i=0;i<data.query_data.length;i++){
+                                let elem =
+                                        '<li>' +
+                                        '   <span>' +
+                                        '       <span class="node-icon"><i class="fa fa-plus-square fa-fw"></i></span>' +
+                                        '       <span class="node-name folder-closed">' +
+                                        '           <a href="javascript:void(0)" category="'+data.query_data[i].category+'">'+
+                                                    data.query_data[i].category+'</a></span>' +
+                                        '   </span>' +
+                                        '   <ul class="sub-node" style="display:none;"></ul>'+
+                                        '</li>' ;
+                                // 判断是否有子节点
+                                if (data.query_data[i].nodes && data.query_data[i].nodes.length > 0){
+                                    $('#knowledge-tree').children().append(elem);
+                                    for (let j=0;j<data.query_data[i].nodes.length;j++){
+                                        let lastElem =
+                                            '<li style="padding-left: 24px">' +
+                                            '   <span>' +
+                                            '       <span class="node-icon "><i class="fa fa-plus-square fa-fw hide"></i></span>' +
+                                            '       <span class="node-choice"><input type="checkbox"></span>' +
+                                            '       <span class="node-name last-node">' +
+                                            '           <a href="javascript:void(0)" category="'+data.query_data[i].category+'">'+
+                                                        data.query_data[i].nodes[j].classify_name+'</a></span>' +
+                                            '   </span>' +
+                                            '</li>' ;
+                                        let subNode = $('#knowledge-tree').find('[category="'+data.query_data[i].nodes[j].category+'"]').parent().parent().next()
+                                        subNode.append(lastElem);
+                                    }
+                                }
+
+                            }
+                            $.fn.unfoldFold();  // 展开折叠事件
+                            // 解决mac系统下chrome、safari浏览器，checkbox元素位置显示问题
+                            let isMac = /macintosh|mac os/.test(navigator.userAgent.toLowerCase());
+                            if (isMac) {
+                                $('.knowledge-manage .node-choice').css('bottom', '3px');
+                            }
+                        } else if (handle == 'panel-homepage') {
+                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
+                            // 生成导航列表
+                            let tbody = $('.homepage-manage tbody');
+                            tbody.empty();
+                            for(let i=0;i<data.query_data.length;i++){
+                                let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
+                                        "<td style='width: 5%'>"+(i+1)+"</td>"+
+                                        "<td name='id' hidden>"+data.query_data[i].id+"</td>"+
+                                        "<td name='nav-name'>"+ data.query_data[i].navName+"</td>"+
+                                        "<td name='view-permissions' viewPermissionsId='"+data.query_data[i].viewPermissionsId+"'>"+
+                                        data.query_data[i].viewPermissions+"</td>"+
+                                        "<td name='filter-conditions'>"+ data.query_data[i].filterConditions+"</td>";
+                                tbody.append("<tr></tr>");
+                                tbody.children('tr').last().append(td);
+                            }
+                        }
+                    }
+                }
+            })
+        };
+
         function BtnMethod(url) {
             this.url = url;
         };
@@ -881,182 +1060,66 @@
             },
         };
 
-        function GetUserPagingData(page) {
-            GetNavClassifyData("[handle=panel-user]", page)
-        }
-
-        // 查询动态生成导航分类数据
-        function GetNavClassifyData(self,page) {
-            let handle = $(self).attr('handle');
-            $.ajax({
-                url: /query/,
-                method: 'post',
-                dataType: 'json',
-                data: {'handle': handle, 'page': page},
-                success: function (data) {
-                    if(data.status === true){
-                        if (handle == 'panel-user'){
-                            $('#paging').removeClass('hide').prev().css('height','87%');  // 显示分页元素;
-                            // 生成用户列表
-                            let tbody = $('.user-manage tbody');
-                            tbody.empty();
-                            for(let i=0;i<data.query_data.length;i++) {
-                                let td = "<td style='width: 5%'><input type='checkbox'/></td>" +
-                                    "<td style='width: 5%'>" + (i + 1) + "</td>" +
-                                    "<td name='uid' hidden>" + data.query_data[i].uid + "</td>" +
-                                    "<td name='username'>" + data.query_data[i].username + "</td>" +
-                                    "<td name='show_name'>" + data.query_data[i].show_name + "</td>" +
-                                    "<td name='password' hidden>" + data.query_data[i].password + "</td>" +
-                                    "<td name='phone_number'>" + data.query_data[i].phone_number + "</td>" +
-                                    "<td name='email'>" + data.query_data[i].email + "</td>" +
-                                    "<td name='dept-name' deptid='"+data.query_data[i].groups__id+"'>" +
-                                     data.query_data[i].groups__dept_name + "</td>"+
-                                    "<td name='permissions' permissionsID='"+data.query_data[i].permissionsID+"'>" +
-                                     data.query_data[i].permissions + "</td>";
-                                tbody.append("<tr></tr>");
-                                tbody.children('tr').last().append(td);
-                            }
-                            // ===============================分页 start==================================
-                            $('.pagination').empty();
-                            //上一页
-                            if (data.paging_param.has_per_page) {
-                                let perPage = '<li><a href="#" aria-label="Previous" onclick="GetUserPagingData('
-                                    + data.paging_param.per_page_number + ')"><span aria-hidden="true">&laquo;</span></a></li>';
-                                $('.pagination').append(perPage)
-                            } else {
-                                let perPage = '<li><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>';
-                                $('.pagination').append(perPage)
-                            }
-                            // 页码
-                            for (let i = 0; i < data.paging_param.curr_show_pages.length; i++) {
-                                if (data.paging_param.current_page === data.paging_param.curr_show_pages[i]) {
-                                    let page = '<li><a href="#" style="background-color: #eeeeee;" onclick="GetSearchPagingData(' +
-                                        data.paging_param.curr_show_pages[i] + ');">' + data.paging_param.curr_show_pages[i] + '</a></li>';
-                                    $('.pagination').append(page)
-                                } else {
-                                    let page = '<li><a href="#" onclick="GetUserPagingData(' +
-                                        data.paging_param.curr_show_pages[i] + ');">' + data.paging_param.curr_show_pages[i] + '</a></li>';
-                                    $('.pagination').append(page)
-                                }
-                            }
-
-                            // 下一页
-                            if (data.paging_param.has_next_page) {
-                                let nextPage = '<li><a href="#" aria-label="Next" onclick="GetUserPagingData(' +
-                                    data.paging_param.next_page_number + ')"><span aria-hidden="true">&raquo;</span></a></li>';
-                                $('.pagination').append(nextPage)
-                            } else {
-                                let nextPage = '<li><a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>';
-                                $('.pagination').append(nextPage)
-                            }
-                            $('.pagination').append('<li style="position: absolute;align-self: center;right: 10px;">总页数:' +
-                                data.paging_param.total_page + '页</li>')
-                            // ===============================分页 end==================================
-
-                        } else if (handle == 'panel-department'){
-                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
-                            // 生成部门树
-                            $('#dept-tree').empty().createdTree(data.query_data);
-                            $.fn.unfoldFold();
-                        } else if (handle == 'panel-dept-level'){
-                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
-                            // 生成部门列表
-                            let tbody = $('.dept-level-manage tbody');
-                            // 每次清空在添加内容
-                            tbody.empty();
-                            for(let i=0;i<data.query_data.length;i++){
-                                let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
-                                        "<td style='width: 5%'>"+(i+1)+"</td>"+
-                                        "<td name='id' hidden>"+data.query_data[i].level_id+"</td>"+
-                                        "<td name='department-level' supid='"+data.query_data[i].superior_correlate_id+"'>"+
-                                        data.query_data[i].department_level+"</td>";
-                                tbody.append("<tr></tr>");
-                                tbody.children('tr').last().append(td);
-                            }
-                        } else if (handle == 'panel-permission'){
-                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
-                            // 生成权限列表
-                            let tbody = $('.permission-manage tbody');
-                            tbody.empty();
-                            for(let i=0;i<data.query_data.length;i++){
-                                    let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
-                                            "<td style='width: 5%'>"+(i+1)+"</td>"+
-                                            "<td name='id' hidden>"+data.query_data[i].permitId+"</td>"+
-                                            "<td name='permission-name'>"+
-                                            data.query_data[i].permitName+"</td>";
-                                tbody.append("<tr></tr>");
-                                tbody.children('tr').last().append(td);
-                            }
-
-                        } else if (handle == 'panel-knowledge') {
-                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
-                            $('#knowledge-tree').empty();
-                            if ($('#knowledge-tree').children().length === 0) {
-                                $('#knowledge-tree').append('<ul class="root-node"></ul>')
-                            }
-                            for (let i=0;i<data.query_data.length;i++){
-                                let elem =
-                                        '<li>' +
-                                        '   <span>' +
-                                        '       <span class="node-icon"><i class="fa fa-plus-square fa-fw"></i></span>' +
-                                       // '       <span class="node-choice"><input type="checkbox"></span>' +
-                                        '       <span class="node-name folder-closed">' +
-                                        '           <a href="javascript:void(0)" category="'+data.query_data[i].category+'">'+
-                                                    data.query_data[i].category+'</a></span>' +
-                                        '   </span>' +
-                                        '   <ul class="sub-node" style="display:none;"></ul>'+
-                                        '</li>' ;
-                                // 判断是否有子节点
-                                if (data.query_data[i].nodes && data.query_data[i].nodes.length > 0){
-                                    $('#knowledge-tree').children().append(elem);
-                                    for (let j=0;j<data.query_data[i].nodes.length;j++){
-                                        let lastElem =
-                                            '<li style="padding-left: 24px">' +
-                                            '   <span>' +
-                                            '       <span class="node-icon "><i class="fa fa-plus-square fa-fw hide"></i></span>' +
-                                            '       <span class="node-choice"><input type="checkbox"></span>' +
-                                            '       <span class="node-name last-node">' +
-                                            '           <a href="javascript:void(0)" category="'+data.query_data[i].category+'">'+
-                                                        data.query_data[i].nodes[j].classify_name+'</a></span>' +
-                                            '   </span>' +
-                                            '</li>' ;
-                                        let subNode = $('#knowledge-tree').find('[category="'+data.query_data[i].nodes[j].category+'"]').parent().parent().next()
-                                        subNode.append(lastElem);
-                                    }
-                                }
-
-                            }
-                            $.fn.unfoldFold();  // 展开折叠事件
-                        } else if (handle == 'panel-homepage') {
-                            $('#paging').addClass('hide').prev().css('height','93%');  // 隐藏分页元素
-                            // 生成导航列表
-                            let tbody = $('.homepage-manage tbody');
-                            tbody.empty();
-                            for(let i=0;i<data.query_data.length;i++){
-                                let td = "<td style='width: 5%'><input type='checkbox'/></td>"+
-                                        "<td style='width: 5%'>"+(i+1)+"</td>"+
-                                        "<td name='id' hidden>"+data.query_data[i].id+"</td>"+
-                                        "<td name='nav-name'>"+ data.query_data[i].navName+"</td>"+
-                                        "<td name='view-permissions' viewPermissionsId='"+data.query_data[i].viewPermissionsId+"'>"+
-                                        data.query_data[i].viewPermissions+"</td>"+
-                                        "<td name='filter-conditions'>"+ data.query_data[i].filterConditions+"</td>";
-                                tbody.append("<tr></tr>");
-                                tbody.children('tr').last().append(td);
-                            }
-                        }
-                    }
-                }
-            })
-        };
-
         function AddDepartment() {
             obj = new BtnMethod('/add/');
             obj.AddEditDepartment();
         }
+
         function EditDepartment() {
             obj = new BtnMethod('/edit/');
             obj.AddEditDepartment();
         }
+
+        function AddDeptLevel() {
+            obj = new BtnMethod('/add/');
+            obj.AddEditDeptLevel();
+        }
+
+        function EditDeptLevel() {
+            obj = new BtnMethod('/edit/');
+            obj.AddEditDeptLevel();
+        }
+
+        function AddPermission() {
+            obj = new BtnMethod('/add/');
+            obj.AddEditPermission();
+        }
+
+        function EditPermission() {
+            obj = new BtnMethod('/edit/');
+            obj.AddEditPermission();
+        }
+
+        function AddUser(){
+            obj = new BtnMethod('/add/');
+            obj.AddEditUser();
+        }
+
+        function EditUser(){
+            obj = new BtnMethod('/edit/');
+            obj.AddEditUser();
+        }
+
+        function AddKnowledgeClassify(){
+            obj = new BtnMethod('/add/');
+            obj.AddEditKnowledgeClassify();
+        }
+
+        function EditKnowledgeClassify(){
+            obj = new BtnMethod('/edit/');
+            obj.AddEditKnowledgeClassify();
+        }
+
+        function AddHomepageSettings(){
+            obj = new BtnMethod('/add/');
+            obj.AddEditHomepageSettings();
+        }
+
+        function EditHomepageSettings(){
+            obj = new BtnMethod('/edit/');
+            obj.AddEditHomepageSettings();
+        }
+
         function OptionChange(self) {
             let currentOption = $(self).find("option:selected").attr('supcorrelateid');
             if (currentOption === 'null' || currentOption === null){
@@ -1085,46 +1148,6 @@
                     }
                 })
             }
-        }
-        function AddDeptLevel() {
-            obj = new BtnMethod('/add/');
-            obj.AddEditDeptLevel();
-        }
-        function EditDeptLevel() {
-            obj = new BtnMethod('/edit/');
-            obj.AddEditDeptLevel();
-        }
-        function AddPermission() {
-            obj = new BtnMethod('/add/');
-            obj.AddEditPermission();
-        }
-        function EditPermission() {
-            obj = new BtnMethod('/edit/');
-            obj.AddEditPermission();
-        }
-        function AddUser(){
-            obj = new BtnMethod('/add/');
-            obj.AddEditUser();
-        }
-        function EditUser(){
-            obj = new BtnMethod('/edit/');
-            obj.AddEditUser();
-        }
-        function AddKnowledgeClassify(){
-            obj = new BtnMethod('/add/');
-            obj.AddEditKnowledgeClassify();
-        }
-        function EditKnowledgeClassify(){
-            obj = new BtnMethod('/edit/');
-            obj.AddEditKnowledgeClassify();
-        }
-        function AddHomepageSettings(){
-            obj = new BtnMethod('/add/');
-            obj.AddEditHomepageSettings();
-        }
-        function EditHomepageSettings(){
-            obj = new BtnMethod('/edit/');
-            obj.AddEditHomepageSettings();
         }
         // 加载完html后默认显示人员管理的数据
         GetNavClassifyData("[handle=panel-user]");

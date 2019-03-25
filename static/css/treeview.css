@@ -24,7 +24,7 @@
     left: 2px;
 }
 .tree-form .node-name{
-    padding: 1px 0 1px 17px;
+    padding: 1px 0 1px 15px;
 }
 .tree-form .folder-closed {
     background: url(/static/img/treeimg/folder-closed.gif) 0 22% no-repeat;

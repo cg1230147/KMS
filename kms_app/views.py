@@ -776,7 +776,7 @@ def query(request):
                         pro_data['category'] = j
                         pro_data['nodes'].append(k)
                 result_list.append(pro_data)
-
+            result_list.sort(key=lambda category: category.get('category'))
             return_data = {'status': True, 'query_data': result_list}
             return HttpResponse(json.dumps(return_data))
         elif handle == PANEL_HOMEPAGE:

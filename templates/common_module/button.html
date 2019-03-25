@@ -10,7 +10,8 @@
         {% endif %}
     </div>
     <div class="col-lg-6 pull-right" style="right: 2px;width: 50%;">
-        <select class="form-control" name="search-category" style="width: 18%;position:absolute;">
+        <select id="search-category" class="form-control" name="search-category"
+                style="border-radius: 4px 0 0 4px;width: 18%;position:absolute;-webkit-appearance: none;background: url(/static/img/xia.png) no-repeat 98% / 11px 17px">
             <option value="fuzzy_search">模糊搜索</option>
             <option value="title__contains">标题</option>
             <option value="issuer__contains">发布人</option>
@@ -22,7 +23,7 @@
             <option value="issue_type__contains">发布类型</option>
         </select>
         <div class="input-group" style="margin-left: 19%;">
-            <input type="text" class="form-control" name="search" placeholder="请输入搜索的关键字！">
+            <input type="text" class="form-control" name="search" placeholder="请输入搜索的关键字!" style="border-radius: 0 0 0 0;">
             <span class="input-group-btn">
                 <button class="btn btn-default" type="button" onclick="Search()">搜索</button>
             </span>
