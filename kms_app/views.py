@@ -607,7 +607,10 @@ def save_doc(request):
                        del_status=0, return_reason=return_reason, subject=subject, doc_status=RELEASE)
             obj = obj[0]
         elif operation == 'send_back':
-            models.KmsDocInfo.objects.filter(uuid=doc_uuid).update(return_reason=return_reason, doc_status=SEND_BACK)
+            obj = models.KmsDocInfo.objects.filter(uuid=doc_uuid)
+            obj.update(return_reason=return_reason, doc_status=SEND_BACK)
+            print(obj)
+            obj = obj[0]
             # obj = obj[0]
     # 更新附件信息
     for dict_url in json.loads(list_url[0]):
