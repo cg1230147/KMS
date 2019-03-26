@@ -588,8 +588,8 @@ def save_doc(request):
                        release_date=release_date, auditor=auditor, auditor_account=auditor_account,
                        issue_type=issue_type,
                        remarks=remarks, issuer_dept=issuer_dept, details=details, describe=describe, solution=solution,
-                       del_status=0, doc_status=SAVE, return_reason=return_reason, subject=subject)
-            obj = obj[0]  # 获取KmsDocInfo对象
+                       del_status=0, return_reason=return_reason, subject=subject, doc_status=SAVE)
+            # obj = obj[0]  # 获取KmsDocInfo对象
         elif operation == 'submit':
             obj = models.KmsDocInfo.objects.filter(uuid=doc_uuid)
             obj.update(uuid=doc_uuid, title=title, classify_name=classify_name, issuer=issuer, issuer_account=username,
@@ -597,7 +597,7 @@ def save_doc(request):
                        issue_type=issue_type,
                        remarks=remarks, issuer_dept=issuer_dept, details=details, describe=describe, solution=solution,
                        del_status=0, return_reason=return_reason, subject=subject, doc_status=EXAMINE)
-            obj = obj[0]
+            # obj = obj[0]
         elif operation == 'release':
             obj = models.KmsDocInfo.objects.filter(uuid=doc_uuid)
             obj.update(uuid=doc_uuid, title=title, classify_name=classify_name, issuer=issuer, issuer_account=username,
@@ -605,13 +605,15 @@ def save_doc(request):
                        issue_type=issue_type,
                        remarks=remarks, issuer_dept=issuer_dept, details=details, describe=describe, solution=solution,
                        del_status=0, return_reason=return_reason, subject=subject, doc_status=RELEASE)
-            obj = obj[0]
+            # obj = obj[0]
         elif operation == 'send_back':
             obj = models.KmsDocInfo.objects.filter(uuid=doc_uuid)
             obj.update(return_reason=return_reason, doc_status=SEND_BACK)
-            print(obj)
-            obj = obj[0]
             # obj = obj[0]
+    try:
+        obj = obj[0]
+    except Exception as exc:
+        print(exc)
     # 更新附件信息
     for dict_url in json.loads(list_url[0]):
         if not models.KmsFilePath.objects.filter(uuid=doc_uuid, name=dict_url['name']):

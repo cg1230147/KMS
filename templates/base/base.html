@@ -169,10 +169,10 @@
             {% block page-head-nav-bar %}
             <nav class="nav-bar">
                 <ul>
-                    <li><a href="{% url 'index' %}">首&nbsp;页</a></li>
-                    <li><a href="{% url 'classify' %}">知识分类</a></li>
+                    <li><a href="{% url 'index' %}" id="homepage">首&nbsp;页</a></li>
+                    <li><a href="{% url 'classify' %}" id="classify">知识分类</a></li>
                     {% if '管理员' in permission %}
-                        <li><a href="{% url 'manage' %}">后台管理</a></li>
+                        <li><a href="{% url 'manage' %}" id="manage">后台管理</a></li>
                     {% endif %}
                 </ul>
             </nav>

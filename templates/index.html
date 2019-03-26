@@ -83,21 +83,20 @@
 {% endblock %}
 
 {% block script %}
-
-
     <script src="/static/js/search.js"></script>
     <script>
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
         });
         $(function () {
+            let homepage = document.getElementById('homepage');
+            homepage.parentElement.setAttribute('style', 'background-color: #003152');
             // 控制表格可自由拖动宽度
             $('#table').colResizable({
                 resizeMode: "fit",
                 liveDrag: true,
                 draggingClass: "dragging",
             });
-
             // 左侧导航切换
             $('.list-group-item').click(function () {
                 $(this).addClass('active').siblings().removeClass('active');
