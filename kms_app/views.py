@@ -381,6 +381,8 @@ def release(request):
                     pro_data['category'] = j
                     pro_data['nodes'].append(k)
             result_list.append(pro_data)
+
+        result_list.sort(key=lambda category: category.get('category'))
         # 用uuid查询当前文档是否存在数据库中
         current_doc = models.KmsDocInfo.objects.filter(uuid=doc_uuid).values()
         # 新增文件 doc_status 为空
@@ -713,7 +715,7 @@ def query(request):
                     i[j] = "" if i[j] is None else i[j]
 
             page = request.POST.get('page', None)  # 从前端获取当前的页码数
-            pag_obj = custom_paginator.CustomPaginator(result_list, page, 5, 16)
+            pag_obj = custom_paginator.CustomPaginator(result_list, page)
             paging_param, data_set = pag_obj.paginator()
 
             return_data = {'status': True, 'query_data': data_set, 'paging_param': paging_param}
@@ -1117,8 +1119,6 @@ try:
         ret = os.system('python manage.py clearsessions')
         if ret == 0:
             print('清理过期session完成！')
-
-
     # scheduler.add_job(clear_session, 'interval', seconds=3)
     scheduler.add_job(clear_session, 'cron', hour=23, minute=30)
     scheduler.start()

@@ -1,5 +1,5 @@
 {# 公共组件 #}
-<div style="height: 6%">
+<div>
     <div class="body-btn btn-group pull-left">
         <!-- IE浏览器或 360浏览器等等 button包含a标签时回忽略 href 属性 -->
         <button class="btn btn-default" onclick="window.open('/release/')">发布</button>
@@ -11,7 +11,7 @@
     </div>
     <div class="col-lg-6 pull-right" style="right: 2px;width: 50%;">
         <select id="search-category" class="form-control" name="search-category"
-                style="border-radius: 4px 0 0 4px;width: 18%;position:absolute;-webkit-appearance: none;background: url(/static/img/xia.png) no-repeat 98% / 11px 17px">
+                style="border-radius: 4px 0 0 4px;width: 18%;position:absolute;-webkit-appearance: none;-moz-appearance: none;background: url(/static/img/xia.png) no-repeat 98% / 11px 17px">
             <option value="fuzzy_search">模糊搜索</option>
             <option value="title__contains">标题</option>
             <option value="issuer__contains">发布人</option>

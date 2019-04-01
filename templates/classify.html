@@ -15,7 +15,20 @@
             background-size: 40px 40px;
             display: none;
         }
+        .content{
+            padding-left:5px;
+            width: 100%;
+            height: 92%;
+            overflow-y: scroll;
+            border-top: 1px solid #dddddd;
+        }
+        @media screen and (max-width: 1500px) {
+            .content{
+                height: 87%;
+            }
+        }
     </style>
+
 {% endblock %}
 
 {% block page_body_left_home %}
@@ -46,8 +59,8 @@
 
 {% block page_body_right_content %}
     <div class="loading"></div>
-    <div class="content" style="padding-left:5px;width: 100%;height: 87%;overflow-y: scroll">
-        <table id="table" style="height: 100%">
+    <div class="content">
+        <table id="table" class="hide" style="height: 100%">
             <thead>
                 <tr>
                     <th style="width: 5%"></th>
@@ -62,7 +75,7 @@
             <tbody></tbody>
         </table>
     </div>
-    <div style="height: 6%;width: 100%;padding-left: 5px;">
+    <div id="paging" style="width: 100%;padding-left: 5px;">
         <nav aria-label="Page navigation" style="position: absolute;bottom: 0px;width: 99%">
             <ul class="pagination" style="display:flex; margin: 0;width: 100%;background-color: #e3e3e3;background: linear-gradient(#e2e2e2, #cccccc);"></ul>
         </nav>
@@ -78,6 +91,34 @@
     <script>
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'}
+        });
+
+        $(function () {
+            let homepage = document.getElementById('classify');
+            homepage.parentElement.setAttribute('style', 'background-color: #003152');
+            // 控制表格可自由拖动宽度
+            $('#table').colResizable({
+                resizeMode: "fit",
+                liveDrag: true,
+                draggingClass: "dragging",
+            });
+
+            // 全选
+            $('#check-all').click(function () {
+                $('.body-right tbody').find('input[type="checkbox"]').prop('checked', true);
+            });
+
+            // 反选
+            $('#invert-sel').click(function () {
+                let checked = $('.body-right tbody').find('input[type="checkbox"]');
+                $(checked).each(function () {
+                    if ($(this).prop('checked') == true){
+                       $(this).prop('checked', false);
+                    } else {
+                       $(this).prop('checked', true);
+                    }
+                });
+            });
         });
 
         function ShowSubMenu(self) {
@@ -99,8 +140,9 @@
                 data: {'classifyName': classifyText+'/'+menuText, 'page':page},
                 success: function (data) {
                     if (data.status) {
+                        $('#table').removeClass('hide');
                         let tbody = $('.content table tbody');
-                        let pageNumber = 16;
+                        let pageNumber = 20;
                         tbody.empty();
                         for (let i = 0; i < pageNumber; i++) {
                             if (data.query_data[i]) {
@@ -152,7 +194,7 @@
                             let nextPage = '<li><a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>';
                             $('.pagination').append(nextPage)
                         }
-                        $('.pagination').append('<li style="position: absolute;align-self: center;right: 10px;">总页数:' +
+                        $('.pagination').append('<li style="position: absolute;align-self: center;right: 10px;top: 25%;">总页数:' +
                             data.paging_param.total_page + '页</li>');
                         $('.loading').hide()
                     }
@@ -168,7 +210,8 @@
         function BatchDeleteDoc(){
             let checked = $('#table').find('input[type=checkbox]:checked');
             let pnc = checked.parent().next().children();
-            let reg = /(?<==).*$/;
+            // let reg = /(?<==).*$/;
+            let reg = /\w{8}(-\w{4}){3}-\w{12}/;
             let uuidSet = [];
             for (let i=0; i<pnc.length;i++){
                 let doc_uuid = reg.exec($(pnc[i]).attr('href'))[0];
@@ -187,32 +230,5 @@
             })
         }
 
-        $(function () {
-            let homepage = document.getElementById('classify');
-            homepage.parentElement.setAttribute('style', 'background-color: #003152');
-            // 控制表格可自由拖动宽度
-            $('#table').colResizable({
-                resizeMode: "fit",
-                liveDrag: true,
-                draggingClass: "dragging",
-            });
-
-            // 全选
-            $('#check-all').click(function () {
-                $('.body-right tbody').find('input[type="checkbox"]').prop('checked', true);
-            });
-
-            // 反选
-            $('#invert-sel').click(function () {
-                let checked = $('.body-right tbody').find('input[type="checkbox"]');
-                $(checked).each(function () {
-                    if ($(this).prop('checked') == true){
-                       $(this).prop('checked', false);
-                    } else {
-                       $(this).prop('checked', true);
-                    }
-                });
-            });
-        })
     </script>
 {% endblock %}

@@ -3,7 +3,7 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 class CustomPaginator(object):
-    def __init__(self, query_set, current_page, show_number_page=5, number=16):
+    def __init__(self, query_set, current_page, show_number_page=5, number=20):
         self.query_set = query_set
         self.number = number
         self.snp = show_number_page
