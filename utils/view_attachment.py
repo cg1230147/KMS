@@ -3,12 +3,15 @@
 import re
 import os
 from kms_app import models
+from KMS import settings
 
-
-FILE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files')
+# FILE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'upload_files')
+FILE_DIR = os.path.join(settings.BASE_DIR, 'upload_files')
 
 class ViewAtt(object):
+
     __instance = None
+
     def __init__(self,doc_uuid, current_doc):
         self.doc_uuid = doc_uuid
         self.current_doc = current_doc
@@ -63,4 +66,3 @@ class ViewAtt(object):
             return cls.__instance
         else:
             return cls.__instance
-        

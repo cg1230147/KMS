@@ -17,10 +17,9 @@ from django.contrib import admin
 from django.urls import path,re_path
 from kms_app import views
 from django.conf.urls.static import static
+from django.conf.urls import url
+from django.views import static as vs
 from KMS import settings
-import os
-import re
-
 
 
 urlpatterns = [
@@ -54,6 +53,10 @@ urlpatterns = [
     re_path(r'del/', views.delete, name='del'),
     re_path(r'query_dept_level/', views.query_dept_level, name='query_dept_level'),
     re_path(r'query_dept_list', views.query_dept_list, name='query_dept_list'),
+
+    # 关闭debug模式后设置静态文件和media访问方式
+    url(r'^static/(?P<path>.*)$', vs.serve,{'document_root': settings.STATIC_ROOT}, name='static'),
+    url(r'^upload_files/(?P<path>.*)$', vs.serve,{'document_root': settings.MEDIA_ROOT}, name='upload_files'),
 
 ]
 # 上传文件url路径
