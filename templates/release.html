@@ -521,7 +521,7 @@
     function SubmitForm(){
         let indicator = $('.file-upload-indicator').attr('title'); // 附件是否上传或存在未上传的，全部上传后控件删除此元素
         if (indicator === undefined) {
-            //e.preventDefault();     // 阻止提交刷新
+            // e.preventDefault();     // 阻止提交刷新
             let ae = document.activeElement;
             let operation = ae.value;   // 获取当前点击的按钮的value，用于区分不同的操作
             let uuid = $('[name=doc_uuid]').val();
